@@ -1,2 +1,30 @@
-.venv
-.idea
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Data directories (raw clinical waveforms and generated binary arrays)
+data/raw/
+data/processed/
+data/synthetic/
+*.npy
+*.npz
+
+# Reports generated figures (tracked for PR review)
+# reports/figures/*.png

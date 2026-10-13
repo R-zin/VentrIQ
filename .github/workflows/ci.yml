@@ -1,0 +1,58 @@
+name: VentriQ CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+  pull_request:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-verify:
+    name: Test & Verify Phase 1 Pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run Unit Tests
+        run: uv run pytest tests/ -v
+
+      - name: Run Phase 1 Dataset Exploration & Verification
+        run: uv run python scripts/explore_dataset.py --report-dir reports/
+
+      - name: Verify Exploration Outputs Exist
+        run: |
+          test -f reports/phase1_exploration_report.md
+          test -f reports/figures/lvef_distribution.png
+          test -f reports/figures/split_distribution.png
+          test -f reports/figures/representative_ecgs.png
+          echo "All Phase 1 reports and visual artifacts successfully verified!"
+
+      - name: Upload Exploration Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase1-exploration-report
+          path: |
+            reports/phase1_exploration_report.md
+            reports/figures/

@@ -22,6 +22,9 @@ Phase 1 provides a safe, memory-efficient data loading, exploration, and verific
   - Structural heart disease composite flag: `shd_moderate_or_greater_flag`
 - **Lead Layout:** Standard clinical 12 leads (`I, II, III, aVR, aVL, aVF, V1, V2, V3, V4, V5, V6`), $f_s = 250$ Hz, 10.0 seconds ($N=2500$ samples).
 
+> [!NOTE]
+> For detailed engineering plans, tasks, and completion criteria for subsequent phases (Signal Preprocessing, Dataset Preparation, Waveform Renderer, and Smartphone Vision Simulation), see [**`docs/PHASE_PLANS.md`**](docs/PHASE_PLANS.md).
+
 ---
 
 ## Repository Structure
@@ -31,6 +34,8 @@ VentriQ/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml               # GitHub Actions automated test & exploration CI
+├── docs/
+│   └── PHASE_PLANS.md           # Engineering specifications for Phases 2 - 5
 ├── data/
 │   ├── raw/
 │   │   └── echonext/            # Raw EchoNext dataset (or synthetic mock)

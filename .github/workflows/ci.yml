@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   test-and-verify:
-    name: Test & Verify Phase 1 Pipeline
+    name: Test & Verify Pipeline (Phases 1 & 2)
     runs-on: ubuntu-latest
 
     steps:
@@ -34,25 +34,32 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Run Unit Tests
+      - name: Run Unit Tests (Phases 1 & 2)
         run: uv run pytest tests/ -v
 
       - name: Run Phase 1 Dataset Exploration & Verification
         run: uv run python scripts/explore_dataset.py --report-dir reports/
 
-      - name: Verify Exploration Outputs Exist
+      - name: Run Phase 2 Signal Preprocessing & Quality Audit
+        run: uv run python scripts/preprocess_ecg.py --report-dir reports/
+
+      - name: Verify Pipeline Artifacts Exist
         run: |
           test -f reports/phase1_exploration_report.md
           test -f reports/figures/lvef_distribution.png
           test -f reports/figures/split_distribution.png
           test -f reports/figures/representative_ecgs.png
-          echo "All Phase 1 reports and visual artifacts successfully verified!"
+          test -f reports/phase2_quality_report.md
+          test -f reports/figures/filtering_comparison.png
+          test -f reports/figures/lead_quality_distribution.png
+          test -f data/processed/quality_summary.json
+          echo "All Phase 1 and Phase 2 reports, figures, and data artifacts successfully verified!"
 
-      - name: Upload Exploration Artifacts
+      - name: Upload Pipeline Artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: phase1-exploration-report
+          name: pipeline-verification-artifacts
           path: |
-            reports/phase1_exploration_report.md
-            reports/figures/
+            reports/
+            data/processed/quality_summary.json

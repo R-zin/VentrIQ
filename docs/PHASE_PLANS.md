@@ -25,7 +25,7 @@ flowchart TD
 | Phase | Focus Area | Primary Target Files | Status |
 |---|---|---|---|
 | **Phase 1** | Dataset Exploration, Schema & Alignment | `src/data/echonext.py`, `scripts/explore_dataset.py`, `tests/test_echonext.py` | **Complete** |
-| **Phase 2** | Signal Quality Control & Configurable Filtering | `src/preprocessing/signal.py`, `src/preprocessing/quality.py`, `configs/preprocessing.yaml` | Planned |
+| **Phase 2** | Signal Quality Control & Configurable Filtering | `src/preprocessing/signal.py`, `src/preprocessing/quality.py`, `configs/preprocessing.yaml` | **Complete** |
 | **Phase 3** | Dataset Manifest & Split Reproducibility | `src/data/dataset.py`, `src/data/splits.py`, `scripts/preprocess_ecg.py` | Planned |
 | **Phase 4** | Digital 12-Lead ECG Paper Image Renderer | `src/rendering/renderer.py`, `src/rendering/layout.py`, `scripts/generate_ecg_images.py` | Planned |
 | **Phase 5** | Smartphone Photo Simulation & Rectification | `src/preprocessing/image.py`, `src/preprocessing/perspective.py`, `src/preprocessing/transforms.py` | Planned |

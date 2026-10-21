@@ -1,0 +1,56 @@
+# VentriQ Preprocessing Configuration
+# Standard 12-lead ECG Preprocessing and Quality Control Parameters
+
+signal:
+  sampling_rate_hz: 250
+  recording_duration_sec: 10.0
+  expected_time_steps: 2500
+  num_leads: 12
+  lead_names:
+    - "I"
+    - "II"
+    - "III"
+    - "aVR"
+    - "aVL"
+    - "aVF"
+    - "V1"
+    - "V2"
+    - "V3"
+    - "V4"
+    - "V5"
+    - "V6"
+
+quality_control:
+  # Lead variance below this threshold in a window is flagged as flatline
+  flatline_variance_threshold: 1.0e-5
+  flatline_window_sec: 0.5
+  # Max fraction of identical consecutive samples flagged as clipped/railed
+  clipping_consecutive_samples: 8
+  clipping_percentile_boundary: 0.001
+  # Minimum acceptable SNR in dB (QRS power vs noise floor)
+  min_acceptable_snr_db: -3.0
+  # Noise energy ratio threshold in high-frequency band (>45 Hz)
+  max_high_frequency_noise_ratio: 0.40
+  # Max allowed faulty leads before overall record is flagged as rejected
+  max_allowed_faulty_leads: 2
+
+filtering:
+  # By default, filtering is disabled for EchoNext waveforms to preserve released morphology
+  apply_filter: false
+  filter_type: "butterworth"  # "butterworth", "chebyshev", "bessel"
+  order: 4
+  lowcut_hz: 0.5             # High-pass cutoff for baseline drift
+  highcut_hz: 40.0           # Low-pass cutoff for high-frequency noise
+  
+  # Powerline interference notch filter (50 Hz / 60 Hz)
+  apply_notch: false
+  notch_frequencies_hz:
+    - 50.0
+    - 60.0
+  notch_quality_factor: 30.0
+
+normalization:
+  # By default, normalization is disabled to preserve physical/z-score amplitude representation
+  apply_normalization: false
+  method: "lead_zscore"      # "lead_zscore", "global_zscore", "minmax", "robust"
+  epsilon: 1.0e-8

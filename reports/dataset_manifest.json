@@ -1,0 +1,1445 @@
+{
+  "source_checksums": {
+    "EchoNext_metadata_100k.csv": "68f3622547b98fd322793454e08ac3807552f116b9181c619be6b2c4ef1d4de8",
+    "EchoNext_train_waveforms.npy": "421ae6a7a7c40b3f08412d92e9b90a41f32d990ccc5cec86c68b7cb4a240cdcb",
+    "EchoNext_val_waveforms.npy": "f2f4e53a00f3729a5a7452f2677f31bf08184d72edaa100d2399ccc75e4695a2",
+    "EchoNext_test_waveforms.npy": "40d25698f2b13cfb505bf7f93b4a9bd7882af1bd51cdc0a3529ba824792bef4d"
+  },
+  "retained_counts_per_split": {
+    "train": 70,
+    "val": 15,
+    "test": 15
+  },
+  "excluded_counts_per_split": {},
+  "exclusion_breakdown": {
+    "missing_lvef": 0,
+    "unusable_signal_quality": 0,
+    "missing_waveform": 0
+  },
+  "patient_counts_per_split": {
+    "test": 15,
+    "val": 15,
+    "train": 56
+  },
+  "target_statistics": {
+    "lvef_count": 100,
+    "lvef_mean": 53.18499999999999,
+    "lvef_std": 11.14165494888439,
+    "lvef_min": 28.4,
+    "lvef_median": 53.8,
+    "lvef_max": 75.0,
+    "lvef_lte_45_rate": 0.26,
+    "shd_rate": 0.36
+  },
+  "environment_metadata": {
+    "python_version": "3.14.0",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "numpy_version": "2.5.3",
+    "pandas_version": "3.0.5",
+    "torch_version": "2.14.1"
+  },
+  "random_seed": 42,
+  "total_retained_records": 100,
+  "records": [
+    {
+      "record_id": "ECHONEXT_train_000000",
+      "patient_key": "P01000",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        0
+      ],
+      "lvef_target": 58.7,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000001",
+      "patient_key": "P01001",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        1
+      ],
+      "lvef_target": 65.2,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000002",
+      "patient_key": "P01002",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        2
+      ],
+      "lvef_target": 64.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000003",
+      "patient_key": "P01003",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        3
+      ],
+      "lvef_target": 30.7,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000004",
+      "patient_key": "P01004",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        4
+      ],
+      "lvef_target": 60.1,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000005",
+      "patient_key": "P01005",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        5
+      ],
+      "lvef_target": 50.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000006",
+      "patient_key": "P01006",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        6
+      ],
+      "lvef_target": 71.1,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000007",
+      "patient_key": "P01007",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        7
+      ],
+      "lvef_target": 63.1,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000008",
+      "patient_key": "P01008",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        8
+      ],
+      "lvef_target": 55.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000009",
+      "patient_key": "P01009",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        9
+      ],
+      "lvef_target": 51.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000010",
+      "patient_key": "P01010",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        10
+      ],
+      "lvef_target": 51.7,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000011",
+      "patient_key": "P01011",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        11
+      ],
+      "lvef_target": 40.3,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000012",
+      "patient_key": "P01012",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        12
+      ],
+      "lvef_target": 60.1,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000013",
+      "patient_key": "P01013",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        13
+      ],
+      "lvef_target": 48.2,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000014",
+      "patient_key": "P01014",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        14
+      ],
+      "lvef_target": 46.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000015",
+      "patient_key": "P01015",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        15
+      ],
+      "lvef_target": 68.3,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000016",
+      "patient_key": "P01016",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        16
+      ],
+      "lvef_target": 54.7,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000017",
+      "patient_key": "P01017",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        17
+      ],
+      "lvef_target": 56.5,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000018",
+      "patient_key": "P01018",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        18
+      ],
+      "lvef_target": 55.6,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000019",
+      "patient_key": "P01019",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        19
+      ],
+      "lvef_target": 49.7,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000020",
+      "patient_key": "P01020",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        20
+      ],
+      "lvef_target": 72.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000021",
+      "patient_key": "P01021",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        21
+      ],
+      "lvef_target": 40.3,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000022",
+      "patient_key": "P01022",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        22
+      ],
+      "lvef_target": 54.3,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000023",
+      "patient_key": "P01023",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        23
+      ],
+      "lvef_target": 40.0,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000024",
+      "patient_key": "P01024",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        24
+      ],
+      "lvef_target": 65.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000025",
+      "patient_key": "P01025",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        25
+      ],
+      "lvef_target": 55.1,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000026",
+      "patient_key": "P01026",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        26
+      ],
+      "lvef_target": 55.2,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000027",
+      "patient_key": "P01027",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        27
+      ],
+      "lvef_target": 71.2,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000028",
+      "patient_key": "P01028",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        28
+      ],
+      "lvef_target": 65.2,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000029",
+      "patient_key": "P01029",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        29
+      ],
+      "lvef_target": 59.1,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000030",
+      "patient_key": "P01030",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        30
+      ],
+      "lvef_target": 75.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000031",
+      "patient_key": "P01031",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        31
+      ],
+      "lvef_target": 62.6,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000032",
+      "patient_key": "P01032",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        32
+      ],
+      "lvef_target": 28.4,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000033",
+      "patient_key": "P01033",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        33
+      ],
+      "lvef_target": 46.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000034",
+      "patient_key": "P01034",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        34
+      ],
+      "lvef_target": 35.7,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000035",
+      "patient_key": "P01035",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        35
+      ],
+      "lvef_target": 43.4,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000036",
+      "patient_key": "P01036",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        36
+      ],
+      "lvef_target": 47.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000037",
+      "patient_key": "P01037",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        37
+      ],
+      "lvef_target": 43.5,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000038",
+      "patient_key": "P01038",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        38
+      ],
+      "lvef_target": 53.7,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000039",
+      "patient_key": "P01039",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        39
+      ],
+      "lvef_target": 53.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000040",
+      "patient_key": "P01040",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        40
+      ],
+      "lvef_target": 60.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000041",
+      "patient_key": "P01041",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        41
+      ],
+      "lvef_target": 56.7,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000042",
+      "patient_key": "P01042",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        42
+      ],
+      "lvef_target": 35.4,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000043",
+      "patient_key": "P01043",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        43
+      ],
+      "lvef_target": 48.3,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000044",
+      "patient_key": "P01044",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        44
+      ],
+      "lvef_target": 50.3,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000045",
+      "patient_key": "P01045",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        45
+      ],
+      "lvef_target": 48.3,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000046",
+      "patient_key": "P01046",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        46
+      ],
+      "lvef_target": 59.1,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000047",
+      "patient_key": "P01047",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        47
+      ],
+      "lvef_target": 69.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000048",
+      "patient_key": "P01048",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        48
+      ],
+      "lvef_target": 63.7,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000049",
+      "patient_key": "P01049",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        49
+      ],
+      "lvef_target": 54.4,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000050",
+      "patient_key": "P01050",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        50
+      ],
+      "lvef_target": 52.3,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000051",
+      "patient_key": "P01051",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        51
+      ],
+      "lvef_target": 41.1,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000052",
+      "patient_key": "P01052",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        52
+      ],
+      "lvef_target": 58.3,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000053",
+      "patient_key": "P01053",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        53
+      ],
+      "lvef_target": 41.1,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000054",
+      "patient_key": "P01054",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        54
+      ],
+      "lvef_target": 53.5,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000055",
+      "patient_key": "P01055",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        55
+      ],
+      "lvef_target": 56.6,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000056",
+      "patient_key": "P01000",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        56
+      ],
+      "lvef_target": 70.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000057",
+      "patient_key": "P01001",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        57
+      ],
+      "lvef_target": 52.2,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000058",
+      "patient_key": "P01002",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        58
+      ],
+      "lvef_target": 71.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000059",
+      "patient_key": "P01003",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        59
+      ],
+      "lvef_target": 71.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000060",
+      "patient_key": "P01004",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        60
+      ],
+      "lvef_target": 58.2,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000061",
+      "patient_key": "P01005",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        61
+      ],
+      "lvef_target": 71.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000062",
+      "patient_key": "P01006",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        62
+      ],
+      "lvef_target": 62.7,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000063",
+      "patient_key": "P01007",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        63
+      ],
+      "lvef_target": 37.3,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000064",
+      "patient_key": "P01008",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        64
+      ],
+      "lvef_target": 53.5,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000065",
+      "patient_key": "P01009",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        65
+      ],
+      "lvef_target": 47.3,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000066",
+      "patient_key": "P01010",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        66
+      ],
+      "lvef_target": 51.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000067",
+      "patient_key": "P01011",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        67
+      ],
+      "lvef_target": 72.9,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000068",
+      "patient_key": "P01012",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        68
+      ],
+      "lvef_target": 40.4,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_train_000069",
+      "patient_key": "P01013",
+      "split": "train",
+      "waveform_ref": [
+        "train",
+        69
+      ],
+      "lvef_target": 48.5,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000070",
+      "patient_key": "P01106",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        0
+      ],
+      "lvef_target": 43.1,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000071",
+      "patient_key": "P01107",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        1
+      ],
+      "lvef_target": 75.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000072",
+      "patient_key": "P01108",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        2
+      ],
+      "lvef_target": 43.9,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000073",
+      "patient_key": "P01109",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        3
+      ],
+      "lvef_target": 44.4,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000074",
+      "patient_key": "P01110",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        4
+      ],
+      "lvef_target": 68.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000075",
+      "patient_key": "P01111",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        5
+      ],
+      "lvef_target": 55.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000076",
+      "patient_key": "P01112",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        6
+      ],
+      "lvef_target": 58.3,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000077",
+      "patient_key": "P01113",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        7
+      ],
+      "lvef_target": 46.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000078",
+      "patient_key": "P01114",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        8
+      ],
+      "lvef_target": 40.8,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000079",
+      "patient_key": "P01115",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        9
+      ],
+      "lvef_target": 60.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000080",
+      "patient_key": "P01116",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        10
+      ],
+      "lvef_target": 58.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000081",
+      "patient_key": "P01117",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        11
+      ],
+      "lvef_target": 42.2,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000082",
+      "patient_key": "P01118",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        12
+      ],
+      "lvef_target": 49.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000083",
+      "patient_key": "P01119",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        13
+      ],
+      "lvef_target": 33.4,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_val_000084",
+      "patient_key": "P01120",
+      "split": "val",
+      "waveform_ref": [
+        "val",
+        14
+      ],
+      "lvef_target": 48.1,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000085",
+      "patient_key": "P01171",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        0
+      ],
+      "lvef_target": 44.2,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000086",
+      "patient_key": "P01172",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        1
+      ],
+      "lvef_target": 58.7,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000087",
+      "patient_key": "P01173",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        2
+      ],
+      "lvef_target": 33.9,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000088",
+      "patient_key": "P01174",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        3
+      ],
+      "lvef_target": 34.0,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000089",
+      "patient_key": "P01175",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        4
+      ],
+      "lvef_target": 42.8,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000090",
+      "patient_key": "P01176",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        5
+      ],
+      "lvef_target": 54.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000091",
+      "patient_key": "P01177",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        6
+      ],
+      "lvef_target": 56.1,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000092",
+      "patient_key": "P01178",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        7
+      ],
+      "lvef_target": 37.8,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000093",
+      "patient_key": "P01179",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        8
+      ],
+      "lvef_target": 44.1,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000094",
+      "patient_key": "P01180",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        9
+      ],
+      "lvef_target": 68.4,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000095",
+      "patient_key": "P01181",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        10
+      ],
+      "lvef_target": 55.5,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000096",
+      "patient_key": "P01182",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        11
+      ],
+      "lvef_target": 56.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000097",
+      "patient_key": "P01183",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        12
+      ],
+      "lvef_target": 49.8,
+      "lvef_lte_45_label": 0,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000098",
+      "patient_key": "P01184",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        13
+      ],
+      "lvef_target": 29.9,
+      "lvef_lte_45_label": 1,
+      "shd_label": 1,
+      "quality_flags": null,
+      "metadata": null
+    },
+    {
+      "record_id": "ECHONEXT_test_000099",
+      "patient_key": "P01185",
+      "split": "test",
+      "waveform_ref": [
+        "test",
+        14
+      ],
+      "lvef_target": 52.0,
+      "lvef_lte_45_label": 0,
+      "shd_label": 0,
+      "quality_flags": null,
+      "metadata": null
+    }
+  ]
+}

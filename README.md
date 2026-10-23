@@ -48,6 +48,31 @@ The project targets deployment with lightweight computer vision models (such as 
   - Standardized output tensors formatted as `(12, 2500)` float32 ready for vision/1D-CNN backbones.
   - Seamlessly integrates with Phase 2 signal preprocessing and quality filtering pipelines.
 
+### Phase 4 — Digital 12-Lead ECG Paper Image Renderer (Complete)
+- **Cardiology Standard Paper Geometry (`src/rendering/layout.py`):**
+  - Paper speed: $25.0\text{ mm/s}$ ($1\text{ mm} = 0.04\text{ s} = 40\text{ ms}$; $5\text{ mm} = 0.20\text{ s} = 200\text{ ms}$).
+  - Voltage calibration: $10.0\text{ mm/mV}$ ($1\text{ mm} = 0.1\text{ mV}$; $5\text{ mm} = 0.5\text{ mV}$; $10\text{ mm} = 1.0\text{ mV}$).
+  - Standard physical paper canvas ($280\text{ mm} \times 190\text{ mm}$) at configurable DPI ($150\text{--}300\text{ DPI}$).
+- **Clinical 3x4 + 1 Rhythm Strip Layout:**
+  - Row 0: Lead I ($0\text{--}2.5\text{ s}$), aVR ($2.5\text{--}5.0\text{ s}$), V1 ($5.0\text{--}7.5\text{ s}$), V4 ($7.5\text{--}10.0\text{ s}$)
+  - Row 1: Lead II ($0\text{--}2.5\text{ s}$), aVL ($2.5\text{--}5.0\text{ s}$), V2 ($5.0\text{--}7.5\text{ s}$), V5 ($7.5\text{--}10.0\text{ s}$)
+  - Row 2: Lead III ($0\text{--}2.5\text{ s}$), aVF ($2.5\text{--}5.0\text{ s}$), V3 ($5.0\text{--}7.5\text{ s}$), V6 ($7.5\text{--}10.0\text{ s}$)
+  - Row 3: Continuous Lead II 10-second rhythm strip ($0.0\text{--}10.0\text{ s}$).
+- **Millimeter Background Grid & Calibration:**
+  - Precise minor ($1.0\text{ mm}$) and major ($5.0\text{ mm}$) grid generation with pre-cached high-performance rendering.
+  - Multiple clinical styling presets (`standard_pink`, `classic_red`, `subtle_gray`, `clinical_green`, `no_grid`).
+  - Standard clinical $1.0\text{ mV} (10\text{ mm}) \times 0.20\text{ s} (5\text{ mm})$ rectangular calibration pulses at each lead baseline.
+- **Waveform Rendering Engine (`src/rendering/renderer.py`):**
+  - Smooth anti-aliased trace rendering with optional 2x supersampling.
+  - EchoNext amplitude adaptation: maps z-score standardized units to millimeters without false millivolt assumptions or inter-lead clipping.
+  - Clinical typography with lead labels (`I`, `II`, `aVR`, etc.) and header/footer parameters.
+- **End-to-End PyTorch Vision Pipeline Integration:**
+  - Renderer acts directly as a PyTorch transform `VentriQTorchDataset(transform=renderer)` yielding `(3, H, W)` float32 image tensors for MobileNetV3 backbones.
+- **Batch Image Generator & Traceability Manifest (`scripts/generate_ecg_images.py`):**
+  - Generates synthetic ECG paper images into `data/synthetic/{split}/{record_id}.png`.
+  - Produces complete `data/synthetic/image_manifest.csv` strictly linking each image to patient key, split, LVEF target, and binary classification labels.
+
+
 > [!NOTE]
 > For detailed engineering plans, tasks, and completion criteria for subsequent phases (Waveform Renderer and Smartphone Vision Simulation), see [**`docs/PHASE_PLANS.md`**](docs/PHASE_PLANS.md).
 
@@ -61,7 +86,8 @@ VentriQ/
 │   └── workflows/
 │       └── ci.yml                     # GitHub Actions automated test & exploration CI
 ├── configs/
-│   └── preprocessing.yaml             # Preprocessing & quality control configuration
+│   ├── preprocessing.yaml             # Preprocessing & quality control configuration
+│   └── rendering.yaml                 # Phase 4 ECG paper rendering & grid configuration
 ├── docs/
 │   └── PHASE_PLANS.md                 # Engineering specifications for Phases 2 - 5
 ├── data/
@@ -70,20 +96,27 @@ VentriQ/
 │   ├── processed/
 │   │   └── quality_summary.json       # Phase 2 aggregate quality statistics
 │   └── synthetic/
+│       ├── train/                     # Rendered synthetic ECG paper recordings
+│       ├── val/
+│       ├── test/
+│       └── image_manifest.csv         # Waveform-to-image clinical metadata manifest
 ├── notebooks/
 │   ├── 01_explore_echonext.ipynb       # Phase 1 dataset exploration & schema verification
 │   ├── 02_validate_preprocessing.ipynb # Phase 2 signal quality & filtering verification
-│   └── 03_validate_dataset_manifest.ipynb # Phase 3 manifest & PyTorch dataset verification
+│   ├── 03_validate_dataset_manifest.ipynb # Phase 3 manifest & PyTorch dataset verification
+│   └── 04_visualize_ecg_images.ipynb  # Phase 4 ECG paper rendering & layout verification
 ├── reports/
 │   ├── dataset_manifest.json          # Phase 3 canonical dataset manifest
 │   ├── phase1_exploration_report.md   # Generated Phase 1 summary report
 │   ├── phase2_quality_report.md       # Generated Phase 2 quality-control report
 │   ├── phase3_manifest_report.md      # Generated Phase 3 manifest & reproducibility report
-│   └── figures/                       # Diagnostic plots (LVEF, filtering, lead faults)
+│   ├── phase4_rendering_report.md     # Generated Phase 4 ECG paper rendering report
+│   └── figures/                       # Diagnostic plots (LVEF, filtering, lead faults, rendered ECGs)
 ├── scripts/
 │   ├── explore_dataset.py             # Phase 1 dataset exploration CLI
 │   ├── preprocess_ecg.py              # Phase 2 signal preprocessing & QC CLI
-│   └── build_dataset_manifest.py      # Phase 3 dataset manifest & reproducibility CLI
+│   ├── build_dataset_manifest.py      # Phase 3 dataset manifest & reproducibility CLI
+│   └── generate_ecg_images.py         # Phase 4 waveform-to-image paper renderer CLI
 ├── src/
 │   ├── data/
 │   │   ├── dataset.py                 # Phase 3 ECGRecord, DatasetManifest, VentriQTorchDataset
@@ -93,6 +126,9 @@ VentriQ/
 │   ├── preprocessing/
 │   │   ├── quality.py                 # ECGQualityEvaluator and QualityReport
 │   │   └── signal.py                  # ECGSignalPreprocessor and ProcessedECG
+│   ├── rendering/
+│   │   ├── layout.py                  # Phase 4 physical paper geometry, 3x4 layout & grid
+│   │   └── renderer.py                # Phase 4 ECGPaperRenderer, ECGImage & PyTorch transform
 │   └── utils/
 │       ├── logging.py                 # Standardized logger
 │       └── paths.py                   # Project path resolution utilities
@@ -100,6 +136,7 @@ VentriQ/
 │   ├── test_dataset.py                # Phase 3 PyTorch dataset & manifest tests (9 tests)
 │   ├── test_echonext.py               # Phase 1 unit tests (11 tests)
 │   ├── test_quality.py                # Phase 2 quality evaluator tests (8 tests)
+│   ├── test_renderer.py               # Phase 4 ECG paper renderer tests (15 tests)
 │   ├── test_signal.py                 # Phase 2 signal preprocessor tests (8 tests)
 │   └── test_splits.py                 # Phase 3 patient isolation & K-Fold tests (7 tests)
 ├── pyproject.toml                     # Project metadata and dependencies
@@ -125,7 +162,7 @@ uv sync
 
 ### 2. Running Unit Tests
 
-Execute the comprehensive test suite (43 unit tests):
+Execute the comprehensive test suite (58 unit tests):
 
 ```bash
 uv run pytest tests/ -v
@@ -148,6 +185,11 @@ Run the Phase 3 dataset manifest generation CLI:
 uv run python scripts/build_dataset_manifest.py --report-dir reports/
 ```
 
+Run the Phase 4 waveform-to-image paper renderer CLI:
+```bash
+uv run python scripts/generate_ecg_images.py --report-dir reports/ --num-samples 15
+```
+
 ### 4. Interactive Jupyter Notebooks
 
 - Phase 1 Exploration:
@@ -162,6 +204,10 @@ uv run python scripts/build_dataset_manifest.py --report-dir reports/
   ```bash
   uv run jupyter notebook notebooks/03_validate_dataset_manifest.ipynb
   ```
+- Phase 4 ECG Paper Rendering & Layout:
+  ```bash
+  uv run jupyter notebook notebooks/04_visualize_ecg_images.ipynb
+  ```
 
 ---
 
@@ -170,6 +216,8 @@ uv run python scripts/build_dataset_manifest.py --report-dir reports/
 - **Phase 1 Exploration Report:** [`reports/phase1_exploration_report.md`](reports/phase1_exploration_report.md)
 - **Phase 2 Quality Report:** [`reports/phase2_quality_report.md`](reports/phase2_quality_report.md)
 - **Phase 3 Manifest & Reproducibility Report:** [`reports/phase3_manifest_report.md`](reports/phase3_manifest_report.md)
+- **Phase 4 ECG Paper Rendering Report:** [`reports/phase4_rendering_report.md`](reports/phase4_rendering_report.md)
 - **Canonical Dataset Manifest:** [`reports/dataset_manifest.json`](reports/dataset_manifest.json)
-- **Unit Tests:** 43 passing tests (100% pass rate) covering dataset loading, memory-mapping, patient isolation, zero-phase filtering, fault detection, PyTorch zero-copy dataset slicing, multi-worker safety, and GroupKFold.
+- **Synthetic Image Manifest:** [`data/synthetic/image_manifest.csv`](data/synthetic/image_manifest.csv)
+- **Unit Tests:** 58 passing tests (100% pass rate) covering dataset loading, memory-mapping, patient isolation, zero-phase filtering, fault detection, PyTorch zero-copy dataset slicing, multi-worker safety, GroupKFold, clinical ECG paper geometry, calibration pulses, and waveform rendering.
 - **Continuous Integration:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) validates all tests and runs automated reporting on pushes and PRs.

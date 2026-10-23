@@ -515,12 +515,13 @@ class VentriQTorchDataset(Dataset):
             elif callable(self.transform):
                 waveform = self.transform(waveform)
 
-        # Transpose to channels_first if requested: (2500, 12) -> (12, 2500)
-        if self.channels_first:
-            waveform = waveform.T
-
-        # Convert to torch tensor
-        waveform_tensor = torch.from_numpy(waveform).to(dtype=torch.float32)
+        # Transpose to channels_first if requested for 2D signal: (2500, 12) -> (12, 2500)
+        if isinstance(waveform, torch.Tensor):
+            waveform_tensor = waveform.to(dtype=torch.float32)
+        else:
+            if self.channels_first and waveform.ndim == 2:
+                waveform = waveform.T
+            waveform_tensor = torch.from_numpy(waveform).to(dtype=torch.float32)
 
         # Build targets
         lvef_val = record.lvef_target if record.has_valid_lvef else float("nan")

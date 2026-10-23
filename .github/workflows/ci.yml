@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   test-and-verify:
-    name: Test & Verify Pipeline (Phases 1, 2, & 3)
+    name: Test & Verify Pipeline (Phases 1, 2, 3, & 4)
     runs-on: ubuntu-latest
 
     steps:
@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Run Unit Tests (Phases 1, 2, & 3)
+      - name: Run Unit Tests (Phases 1, 2, 3, & 4)
         run: uv run pytest tests/ -v
 
       - name: Run Phase 1 Dataset Exploration & Verification
@@ -45,6 +45,9 @@ jobs:
 
       - name: Run Phase 3 Dataset Manifest & Traceability Audit
         run: uv run python scripts/build_dataset_manifest.py --report-dir reports/
+
+      - name: Run Phase 4 ECG Waveform-to-Image Paper Renderer
+        run: uv run python scripts/generate_ecg_images.py --report-dir reports/ --num-samples 5
 
       - name: Verify Pipeline Artifacts Exist
         run: |
@@ -58,7 +61,10 @@ jobs:
           test -f data/processed/quality_summary.json
           test -f reports/dataset_manifest.json
           test -f reports/phase3_manifest_report.md
-          echo "All Phase 1, Phase 2, and Phase 3 reports, figures, and data artifacts successfully verified!"
+          test -f reports/phase4_rendering_report.md
+          test -f reports/figures/rendered_ecg_sample.png
+          test -f data/synthetic/image_manifest.csv
+          echo "All Phase 1, Phase 2, Phase 3, and Phase 4 reports, figures, and data artifacts successfully verified!"
 
       - name: Upload Pipeline Artifacts
         uses: actions/upload-artifact@v4
@@ -68,3 +74,5 @@ jobs:
           path: |
             reports/
             data/processed/quality_summary.json
+            data/synthetic/image_manifest.csv
+

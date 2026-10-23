@@ -27,7 +27,7 @@ flowchart TD
 | **Phase 1** | Dataset Exploration, Schema & Alignment | `src/data/echonext.py`, `scripts/explore_dataset.py`, `tests/test_echonext.py` | **Complete** |
 | **Phase 2** | Signal Quality Control & Configurable Filtering | `src/preprocessing/signal.py`, `src/preprocessing/quality.py`, `configs/preprocessing.yaml` | **Complete** |
 | **Phase 3** | Dataset Manifest & Split Reproducibility | `src/data/dataset.py`, `src/data/splits.py`, `scripts/build_dataset_manifest.py` | **Complete** |
-| **Phase 4** | Digital 12-Lead ECG Paper Image Renderer | `src/rendering/renderer.py`, `src/rendering/layout.py`, `scripts/generate_ecg_images.py` | Planned |
+| **Phase 4** | Digital 12-Lead ECG Paper Image Renderer | `src/rendering/renderer.py`, `src/rendering/layout.py`, `scripts/generate_ecg_images.py` | **Complete** |
 | **Phase 5** | Smartphone Photo Simulation & Rectification | `src/preprocessing/image.py`, `src/preprocessing/perspective.py`, `src/preprocessing/transforms.py` | Planned |
 
 ---
@@ -223,14 +223,19 @@ Convert digital 12-lead ECG waveforms into photorealistic, standardized ECG pape
 - `src/rendering/__init__.py`
 - `src/rendering/renderer.py`
 - `src/rendering/layout.py`
+- `configs/rendering.yaml`
 - `scripts/generate_ecg_images.py`
 - `tests/test_renderer.py`
-- `notebooks/03_visualize_ecg_images.ipynb`
+- `notebooks/04_visualize_ecg_images.ipynb`
+- `reports/phase4_rendering_report.md`
+- `reports/figures/rendered_ecg_sample.png`
 
 ### 5. Completion Criteria & Verification
 - Rendered images verify proper 3x4 lead layout with continuous Lead II rhythm strip.
 - Waveform-to-image manifest strictly preserves mapping to original LVEF targets.
 - Visual inspection confirms anti-aliasing and grid alignment.
+- Zero patient leakage verified across synthetic image splits.
+- Seamless PyTorch dataset transform integration (`transform=renderer`).
 
 ---
 

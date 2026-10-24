@@ -28,7 +28,7 @@ flowchart TD
 | **Phase 2** | Signal Quality Control & Configurable Filtering | `src/preprocessing/signal.py`, `src/preprocessing/quality.py`, `configs/preprocessing.yaml` | **Complete** |
 | **Phase 3** | Dataset Manifest & Split Reproducibility | `src/data/dataset.py`, `src/data/splits.py`, `scripts/build_dataset_manifest.py` | **Complete** |
 | **Phase 4** | Digital 12-Lead ECG Paper Image Renderer | `src/rendering/renderer.py`, `src/rendering/layout.py`, `scripts/generate_ecg_images.py` | **Complete** |
-| **Phase 5** | Smartphone Photo Simulation & Rectification | `src/preprocessing/image.py`, `src/preprocessing/perspective.py`, `src/preprocessing/transforms.py` | Planned |
+| **Phase 5** | Smartphone Photo Simulation & Rectification | `src/preprocessing/image.py`, `src/preprocessing/perspective.py`, `src/preprocessing/transforms.py` | **Complete** |
 
 ---
 
@@ -269,13 +269,21 @@ Build the production inference preprocessor:
 - `src/preprocessing/perspective.py`
 - `src/preprocessing/transforms.py`
 - `src/rendering/augmentation.py`
+- `configs/augmentation.yaml`
+- `tests/test_augmentation.py`
+- `tests/test_perspective.py`
 - `tests/test_image_preprocessing.py`
 - `scripts/validate_pipeline.py`
+- `notebooks/05_validate_vision_pipeline.ipynb`
+- `reports/phase5_vision_report.md`
+- `reports/figures/vision_pipeline_stages.png`
 
 ### 4. Completion Criteria & Verification
-- Distortion augmentations produce realistic, visually inspected smartphone ECG simulations.
-- Preprocessing module successfully rectifies perspective-distorted images back into canonical format.
-- Output tensors match exact input specifications required for MobileNetV3 ($B \times 3 \times H \times W$, float32).
+- Distortion augmentations produce realistic, visually inspected smartphone ECG simulations with ground-truth corner tracking.
+- Preprocessing module successfully rectifies perspective-distorted images back into canonical format (mean corner error $< 5\text{ px}$).
+- Background division normalization and CLAHE restore trace visibility in cast shadow zones.
+- Output tensors match exact input specifications required for MobileNetV3 ($B \times 3 \times 224 \times 224$, float32).
+- Zero external OpenCV C++ dependencies needed; pure NumPy, SciPy, Pillow, and PyTorch portable pipeline.
 
 ---
 

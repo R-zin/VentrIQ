@@ -6,6 +6,13 @@ This package provides high-fidelity, clinical-grade conversion of digital
 
 from __future__ import annotations
 
+from src.rendering.augmentation import (
+    DistortionConfig,
+    SimulatedECGPhoto,
+    SmartphoneECGSimulator,
+    compute_3d_perspective_homography,
+    load_augmentation_config,
+)
 from src.rendering.layout import (
     CalibrationPulseConfig,
     ECGLayout,
@@ -26,12 +33,17 @@ from src.rendering.renderer import (
 
 __all__ = [
     "CalibrationPulseConfig",
+    "DistortionConfig",
     "ECGImage",
     "ECGLayout",
     "ECGLayoutConfig",
     "ECGPaperRenderer",
     "GridConfig",
     "LeadSegment",
+    "SimulatedECGPhoto",
+    "SmartphoneECGSimulator",
+    "compute_3d_perspective_homography",
+    "load_augmentation_config",
     "DEFAULT_MAJOR_GRID_MM",
     "DEFAULT_MINOR_GRID_MM",
     "DEFAULT_PAPER_SPEED_MM_PER_SEC",

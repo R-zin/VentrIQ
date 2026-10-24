@@ -73,8 +73,33 @@ The project targets deployment with lightweight computer vision models (such as 
   - Produces complete `data/synthetic/image_manifest.csv` strictly linking each image to patient key, split, LVEF target, and binary classification labels.
 
 
-> [!NOTE]
-> For detailed engineering plans, tasks, and completion criteria for subsequent phases (Waveform Renderer and Smartphone Vision Simulation), see [**`docs/PHASE_PLANS.md`**](docs/PHASE_PLANS.md).
+### Phase 5 — Smartphone Photo Simulation & Vision Preprocessing (Complete)
+- **Real-World Smartphone Capture Simulation (`src/rendering/augmentation.py`):**
+  - **3D Camera Pose & Perspective Homography:** Simulates camera yaw ($\pm 15^\circ$), pitch ($\pm 15^\circ$), and roll ($\pm 10^\circ$) via 3D pinhole camera rotation and 8-parameter homography projection.
+  - **Ground-Truth Corner Coordinate Tracking:** Records exact transformed corner coordinates for quantitative evaluation of downstream localization algorithms.
+  - **Non-Uniform Illumination & Vignetting:** Radial lighting gradients and flash hotspots.
+  - **Polygonal Cast Shadows:** Hand and smartphone body occlusions with realistic soft Gaussian penumbras.
+  - **Specular Glare:** Localized high-intensity reflection hotspots simulating overhead clinic lighting.
+  - **Paper Deformations & Optical Artifacts:** Cylindrical page curl, defocus blur, motion blur, additive Gaussian sensor noise, and JPEG compression quantization.
+  - **Severity Presets (`configs/augmentation.yaml`):** `clean`, `mild`, `moderate`, and `severe` configurations.
+- **Document Localization & Corner Detection (`src/preprocessing/perspective.py`):**
+  - Robust Otsu bimodal segmentation and Sobel gradient magnitude edge detection.
+  - Extremal convex quadrilateral fitting extracting ordered corners `[TL, TR, BR, BL]`.
+  - Achieves $< 5\text{ px}$ mean corner localization error against simulation ground truth.
+- **Four-Point Perspective Rectification:**
+  - Inverts projective homography to unwarp tilted paper documents back into canonical rectilinear coordinates matching standard $280\text{ mm} \times 190\text{ mm}$ ECG paper.
+- **Illumination Normalization & Contrast Enhancement (`src/preprocessing/image.py`):**
+  - Background illumination estimation via morphological opening and large-kernel Gaussian filtering.
+  - Division normalization ($I_{norm} = I / I_{bg} \times 245$) eliminating cast shadow gradients while preserving fine waveform traces.
+  - Contrast Limited Adaptive Histogram Equalization (CLAHE) optimizing trace and grid visibility.
+- **MobileNetV3 Edge Tensor Formatting (`src/preprocessing/transforms.py`):**
+  - Standardized resizing ($224 \times 224$ or high-res $448 \times 448$) and float32 tensor conversion.
+  - ImageNet channel standardization ($\mu = [0.485, 0.456, 0.406]$, $\sigma = [0.229, 0.224, 0.225]$).
+  - Optional 12-lead multi-crop patch extraction yielding shape $(12, 3, 112, 224)$.
+  - `MobileNetV3Preprocessor` callable pipeline integrating directly into PyTorch DataLoaders.
+- **End-to-End CLI Pipeline & Evaluation (`scripts/validate_pipeline.py`):**
+  - Evaluates Peak Signal-to-Noise Ratio (PSNR) and Structural Similarity Index (SSIM).
+  - Generates multi-stage comparative figure and [`reports/phase5_vision_report.md`](reports/phase5_vision_report.md).
 
 ---
 
@@ -86,10 +111,11 @@ VentriQ/
 │   └── workflows/
 │       └── ci.yml                     # GitHub Actions automated test & exploration CI
 ├── configs/
-│   ├── preprocessing.yaml             # Preprocessing & quality control configuration
+│   ├── augmentation.yaml              # Phase 5 smartphone distortion & capture presets
+│   ├── preprocessing.yaml             # Phase 2 preprocessing & quality control configuration
 │   └── rendering.yaml                 # Phase 4 ECG paper rendering & grid configuration
 ├── docs/
-│   └── PHASE_PLANS.md                 # Engineering specifications for Phases 2 - 5
+│   └── PHASE_PLANS.md                 # Engineering specifications for Phases 1 - 5
 ├── data/
 │   ├── raw/
 │   │   └── echonext/                  # Raw EchoNext dataset (or synthetic mock)
@@ -104,19 +130,22 @@ VentriQ/
 │   ├── 01_explore_echonext.ipynb       # Phase 1 dataset exploration & schema verification
 │   ├── 02_validate_preprocessing.ipynb # Phase 2 signal quality & filtering verification
 │   ├── 03_validate_dataset_manifest.ipynb # Phase 3 manifest & PyTorch dataset verification
-│   └── 04_visualize_ecg_images.ipynb  # Phase 4 ECG paper rendering & layout verification
+│   ├── 04_visualize_ecg_images.ipynb  # Phase 4 ECG paper rendering & layout verification
+│   └── 05_validate_vision_pipeline.ipynb # Phase 5 smartphone simulation & vision pipeline
 ├── reports/
 │   ├── dataset_manifest.json          # Phase 3 canonical dataset manifest
 │   ├── phase1_exploration_report.md   # Generated Phase 1 summary report
 │   ├── phase2_quality_report.md       # Generated Phase 2 quality-control report
 │   ├── phase3_manifest_report.md      # Generated Phase 3 manifest & reproducibility report
 │   ├── phase4_rendering_report.md     # Generated Phase 4 ECG paper rendering report
-│   └── figures/                       # Diagnostic plots (LVEF, filtering, lead faults, rendered ECGs)
+│   ├── phase5_vision_report.md        # Generated Phase 5 smartphone vision report
+│   └── figures/                       # Diagnostic plots, rendered ECGs & vision stages
 ├── scripts/
 │   ├── explore_dataset.py             # Phase 1 dataset exploration CLI
 │   ├── preprocess_ecg.py              # Phase 2 signal preprocessing & QC CLI
 │   ├── build_dataset_manifest.py      # Phase 3 dataset manifest & reproducibility CLI
-│   └── generate_ecg_images.py         # Phase 4 waveform-to-image paper renderer CLI
+│   ├── generate_ecg_images.py         # Phase 4 waveform-to-image paper renderer CLI
+│   └── validate_pipeline.py           # Phase 5 end-to-end vision pipeline CLI
 ├── src/
 │   ├── data/
 │   │   ├── dataset.py                 # Phase 3 ECGRecord, DatasetManifest, VentriQTorchDataset
@@ -124,17 +153,24 @@ VentriQ/
 │   │   ├── signal.py                  # Legacy backward-compatible signal module
 │   │   └── splits.py                  # Phase 3 patient leakage audit & PatientGroupKFold
 │   ├── preprocessing/
-│   │   ├── quality.py                 # ECGQualityEvaluator and QualityReport
-│   │   └── signal.py                  # ECGSignalPreprocessor and ProcessedECG
+│   │   ├── image.py                   # Phase 5 shadow division & CLAHE contrast enhancement
+│   │   ├── perspective.py             # Phase 5 corner detection & 4-point homography unwarping
+│   │   ├── quality.py                 # Phase 2 ECGQualityEvaluator and QualityReport
+│   │   ├── signal.py                  # Phase 2 ECGSignalPreprocessor and ProcessedECG
+│   │   └── transforms.py              # Phase 5 MobileNetV3Preprocessor & vision transforms
 │   ├── rendering/
+│   │   ├── augmentation.py            # Phase 5 smartphone 3D pose, shadows, glare & noise
 │   │   ├── layout.py                  # Phase 4 physical paper geometry, 3x4 layout & grid
 │   │   └── renderer.py                # Phase 4 ECGPaperRenderer, ECGImage & PyTorch transform
 │   └── utils/
 │       ├── logging.py                 # Standardized logger
 │       └── paths.py                   # Project path resolution utilities
 ├── tests/
+│   ├── test_augmentation.py           # Phase 5 distortion simulation tests (12 tests)
 │   ├── test_dataset.py                # Phase 3 PyTorch dataset & manifest tests (9 tests)
 │   ├── test_echonext.py               # Phase 1 unit tests (11 tests)
+│   ├── test_image_preprocessing.py    # Phase 5 illumination & transform tests (8 tests)
+│   ├── test_perspective.py            # Phase 5 corner detection & rectification tests (6 tests)
 │   ├── test_quality.py                # Phase 2 quality evaluator tests (8 tests)
 │   ├── test_renderer.py               # Phase 4 ECG paper renderer tests (15 tests)
 │   ├── test_signal.py                 # Phase 2 signal preprocessor tests (8 tests)
@@ -162,7 +198,7 @@ uv sync
 
 ### 2. Running Unit Tests
 
-Execute the comprehensive test suite (58 unit tests):
+Execute the comprehensive test suite (84 unit tests):
 
 ```bash
 uv run pytest tests/ -v
@@ -190,6 +226,11 @@ Run the Phase 4 waveform-to-image paper renderer CLI:
 uv run python scripts/generate_ecg_images.py --report-dir reports/ --num-samples 15
 ```
 
+Run the Phase 5 smartphone vision simulation & rectification CLI:
+```bash
+uv run python scripts/validate_pipeline.py --report-dir reports/ --num-samples 5
+```
+
 ### 4. Interactive Jupyter Notebooks
 
 - Phase 1 Exploration:
@@ -208,6 +249,10 @@ uv run python scripts/generate_ecg_images.py --report-dir reports/ --num-samples
   ```bash
   uv run jupyter notebook notebooks/04_visualize_ecg_images.ipynb
   ```
+- Phase 5 Smartphone Simulation & Vision Pipeline:
+  ```bash
+  uv run jupyter notebook notebooks/05_validate_vision_pipeline.ipynb
+  ```
 
 ---
 
@@ -217,7 +262,8 @@ uv run python scripts/generate_ecg_images.py --report-dir reports/ --num-samples
 - **Phase 2 Quality Report:** [`reports/phase2_quality_report.md`](reports/phase2_quality_report.md)
 - **Phase 3 Manifest & Reproducibility Report:** [`reports/phase3_manifest_report.md`](reports/phase3_manifest_report.md)
 - **Phase 4 ECG Paper Rendering Report:** [`reports/phase4_rendering_report.md`](reports/phase4_rendering_report.md)
+- **Phase 5 Smartphone Vision Report:** [`reports/phase5_vision_report.md`](reports/phase5_vision_report.md)
 - **Canonical Dataset Manifest:** [`reports/dataset_manifest.json`](reports/dataset_manifest.json)
 - **Synthetic Image Manifest:** [`data/synthetic/image_manifest.csv`](data/synthetic/image_manifest.csv)
-- **Unit Tests:** 58 passing tests (100% pass rate) covering dataset loading, memory-mapping, patient isolation, zero-phase filtering, fault detection, PyTorch zero-copy dataset slicing, multi-worker safety, GroupKFold, clinical ECG paper geometry, calibration pulses, and waveform rendering.
+- **Unit Tests:** 84 passing tests (100% pass rate) covering dataset loading, memory-mapping, patient isolation, zero-phase filtering, fault detection, PyTorch zero-copy dataset slicing, multi-worker safety, GroupKFold, clinical ECG paper geometry, calibration pulses, waveform rendering, 3D perspective distortion, corner detection, homography rectification, shadow division normalization, and MobileNetV3 tensors.
 - **Continuous Integration:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) validates all tests and runs automated reporting on pushes and PRs.

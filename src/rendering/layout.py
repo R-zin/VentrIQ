@@ -17,16 +17,14 @@ Standard Clinical Conventions Followed:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import logging
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
 from src.data.echonext import (
-    EXPECTED_TIME_STEPS,
-    NUM_LEADS,
     RECORDING_DURATION_SEC,
     SAMPLING_RATE_HZ,
     STANDARD_12_LEADS,
@@ -59,7 +57,9 @@ class GridConfig:
     minor_line_width_px: float = 0.5
     major_line_width_px: float = 1.0
     show_grid: bool = True
-    style: str = "standard_pink"  # 'standard_pink', 'classic_red', 'subtle_gray', 'green', 'clean_white'
+    style: str = (
+        "standard_pink"  # 'standard_pink', 'classic_red', 'subtle_gray', 'green', 'clean_white'
+    )
 
     @classmethod
     def from_preset(cls, preset_name: str) -> "GridConfig":
@@ -106,7 +106,9 @@ class GridConfig:
             ),
         }
         if preset_name not in presets:
-            raise ValueError(f"Unknown grid preset: {preset_name}. Available: {list(presets.keys())}")
+            raise ValueError(
+                f"Unknown grid preset: {preset_name}. Available: {list(presets.keys())}"
+            )
         return presets[preset_name]
 
 
@@ -116,9 +118,9 @@ class CalibrationPulseConfig:
 
     show_pulse: bool = True
     pulse_height_mv: float = 1.0  # Standard 1.0 mV height (10 mm)
-    pulse_width_sec: float = 0.2   # Standard 0.2 s width (5 mm, 1 large box)
-    lead_in_sec: float = 0.08      # Baseline before step up (2 mm)
-    lead_out_sec: float = 0.08     # Baseline after step down (2 mm)
+    pulse_width_sec: float = 0.2  # Standard 0.2 s width (5 mm, 1 large box)
+    lead_in_sec: float = 0.08  # Baseline before step up (2 mm)
+    lead_out_sec: float = 0.08  # Baseline after step down (2 mm)
     rows_to_display: Tuple[int, ...] = (0, 1, 2, 3)  # Display pulse on all rows
 
 
@@ -227,11 +229,11 @@ class ECGLayout:
 
     def mm_to_px(self, mm_val: float) -> float:
         """Convert millimeters to exact float pixels."""
-        return mm_val * self._px_per_mm
+        return float(mm_val * self._px_per_mm)
 
     def px_to_mm(self, px_val: float) -> float:
         """Convert pixels to physical millimeters."""
-        return px_val / self._px_per_mm
+        return float(px_val / self._px_per_mm)
 
     @property
     def canvas_width_px(self) -> int:
@@ -246,12 +248,16 @@ class ECGLayout:
     @property
     def printable_width_mm(self) -> float:
         """Printable width excluding left and right margins."""
-        return self.config.paper_width_mm - (self.config.margin_left_mm + self.config.margin_right_mm)
+        return self.config.paper_width_mm - (
+            self.config.margin_left_mm + self.config.margin_right_mm
+        )
 
     @property
     def printable_height_mm(self) -> float:
         """Printable height excluding top and bottom margins."""
-        return self.config.paper_height_mm - (self.config.margin_top_mm + self.config.margin_bottom_mm)
+        return self.config.paper_height_mm - (
+            self.config.margin_top_mm + self.config.margin_bottom_mm
+        )
 
     def get_lead_segments(self) -> List[LeadSegment]:
         """Compute the complete set of lead segment geometries for the chosen layout."""
@@ -281,8 +287,8 @@ class ECGLayout:
         # Col 2 (5.0 - 7.5s): V1,  V2,  V3
         # Col 3 (7.5 - 10.0s): V4,  V5,  V6
         grid_matrix = [
-            ["I",   "aVR", "V1", "V4"],  # Row 0
-            ["II",  "aVL", "V2", "V5"],  # Row 1
+            ["I", "aVR", "V1", "V4"],  # Row 0
+            ["II", "aVL", "V2", "V5"],  # Row 1
             ["III", "aVF", "V3", "V6"],  # Row 2
         ]
 
@@ -355,8 +361,8 @@ class ECGLayout:
     def _build_3x4_segments(self) -> List[LeadSegment]:
         """Build standard 3 rows of 4 leads without rhythm strip."""
         grid_matrix = [
-            ["I",   "aVR", "V1", "V4"],
-            ["II",  "aVL", "V2", "V5"],
+            ["I", "aVR", "V1", "V4"],
+            ["II", "aVL", "V2", "V5"],
             ["III", "aVF", "V3", "V6"],
         ]
         segments: List[LeadSegment] = []
@@ -486,11 +492,11 @@ class ECGLayout:
         x_ticks_major_mm = np.arange(0.0, w_mm + 0.001, major_step)
         y_ticks_major_mm = np.arange(0.0, h_mm + 0.001, major_step)
 
-        x_minor_px = np.round(self.mm_to_px(x_ticks_minor_mm)).astype(np.float32)
-        y_minor_px = np.round(self.mm_to_px(y_ticks_minor_mm)).astype(np.float32)
+        x_minor_px = np.round(x_ticks_minor_mm * self._px_per_mm).astype(np.float32)
+        y_minor_px = np.round(y_ticks_minor_mm * self._px_per_mm).astype(np.float32)
 
-        x_major_px = np.round(self.mm_to_px(x_ticks_major_mm)).astype(np.float32)
-        y_major_px = np.round(self.mm_to_px(y_ticks_major_mm)).astype(np.float32)
+        x_major_px = np.round(x_ticks_major_mm * self._px_per_mm).astype(np.float32)
+        y_major_px = np.round(y_ticks_major_mm * self._px_per_mm).astype(np.float32)
 
         return x_minor_px, y_minor_px, x_major_px, y_major_px
 
@@ -535,8 +541,8 @@ class ECGLayout:
 
         pts_mm = np.array([p1, p2, p3, p4, p5, p6], dtype=np.float32)
         pts_px = np.zeros_like(pts_mm)
-        pts_px[:, 0] = self.mm_to_px(pts_mm[:, 0])
-        pts_px[:, 1] = self.mm_to_px(pts_mm[:, 1])
+        pts_px[:, 0] = pts_mm[:, 0] * self._px_per_mm
+        pts_px[:, 1] = pts_mm[:, 1] * self._px_per_mm
 
         return pts_px
 
@@ -551,11 +557,14 @@ def load_rendering_config(config_path: Optional[Union[str, Path]] = None) -> ECG
         Configured ECGLayoutConfig instance.
     """
     import yaml
+
     from src.utils.paths import CONFIGS_DIR
 
     target_path = Path(config_path) if config_path else CONFIGS_DIR / "rendering.yaml"
     if not target_path.exists():
-        logger.warning(f"Rendering config not found at {target_path}; falling back to default config.")
+        logger.warning(
+            f"Rendering config not found at {target_path}; falling back to default config."
+        )
         return ECGLayoutConfig()
 
     with open(target_path, "r", encoding="utf-8") as f:
@@ -620,4 +629,3 @@ def load_rendering_config(config_path: Optional[Union[str, Path]] = None) -> ECG
         show_header=bool(typo.get("show_header", True)),
         show_footer=bool(typo.get("show_footer", True)),
     )
-

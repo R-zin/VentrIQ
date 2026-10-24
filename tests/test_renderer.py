@@ -16,24 +16,20 @@ Tests cover:
 from __future__ import annotations
 
 from pathlib import Path
-import tempfile
 
 import numpy as np
-from PIL import Image
 import pytest
 import torch
+from PIL import Image
 from torch.utils.data import DataLoader
 
 from src.data.dataset import ECGRecord, VentriQTorchDataset
 from src.data.echonext import (
     EXPECTED_TIME_STEPS,
     NUM_LEADS,
-    SAMPLING_RATE_HZ,
-    STANDARD_12_LEADS,
     create_mock_echonext_dataset,
 )
 from src.rendering import (
-    CalibrationPulseConfig,
     ECGImage,
     ECGLayout,
     ECGLayoutConfig,
@@ -142,8 +138,8 @@ def test_standard_3x4_1r_lead_segments():
     # Row 1: II,  aVL, V2, V5
     # Row 2: III, aVF, V3, V6
     expected_matrix = [
-        ["I",   "aVR", "V1", "V4"],
-        ["II",  "aVL", "V2", "V5"],
+        ["I", "aVR", "V1", "V4"],
+        ["II", "aVL", "V2", "V5"],
         ["III", "aVF", "V3", "V6"],
     ]
 

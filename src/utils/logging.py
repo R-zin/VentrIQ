@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Optional
 
 
 def get_logger(name: str = "ventriq", level: int = logging.INFO) -> logging.Logger:

@@ -15,11 +15,10 @@ This script performs comprehensive dataset exploration, verifying:
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
-import json
-import logging
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 # Ensure repository root is on sys.path
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +26,7 @@ if str(PROJECT_ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT_DIR))
 
 import matplotlib
+
 matplotlib.use("Agg")  # Non-interactive backend for headless environments / CI
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,18 +36,13 @@ from src.data.echonext import (
     EXPECTED_TIME_STEPS,
     LVEF_MODERATE_THRESHOLD,
     LVEF_SEVERE_THRESHOLD,
-    NUM_LEADS,
     RECORDING_DURATION_SEC,
-    SAMPLING_RATE_HZ,
     STANDARD_12_LEADS,
     EchoNextDataset,
     create_mock_echonext_dataset,
 )
 from src.utils.logging import get_logger
 from src.utils.paths import (
-    FIGURES_DIR,
-    PROJECT_ROOT,
-    RAW_DATA_DIR,
     REPORTS_DIR,
     get_raw_echonext_dir,
 )
@@ -124,7 +119,11 @@ def plot_lvef_distribution(df: pd.DataFrame, figures_dir: Path) -> Path:
         label="Preserved Threshold (>= 50%)",
     )
 
-    plt.title("EchoNext Left Ventricular Ejection Fraction (LVEF) Distribution", fontsize=13, fontweight="bold")
+    plt.title(
+        "EchoNext Left Ventricular Ejection Fraction (LVEF) Distribution",
+        fontsize=13,
+        fontweight="bold",
+    )
     plt.xlabel("LVEF (%)", fontsize=11)
     plt.ylabel("Probability Density", fontsize=11)
     plt.grid(True, linestyle="--", alpha=0.4)
@@ -155,12 +154,23 @@ def plot_split_distribution(df: pd.DataFrame, patient_col: str, figures_dir: Pat
     width = 0.35
 
     plt.figure(figsize=(8, 4.5), dpi=150)
-    plt.bar(x - width / 2, records, width, label="ECG Records", color="#3498db", edgecolor="#2980b9")
-    plt.bar(x + width / 2, patients, width, label="Unique Patients", color="#1abc9c", edgecolor="#16a085")
+    plt.bar(
+        x - width / 2, records, width, label="ECG Records", color="#3498db", edgecolor="#2980b9"
+    )
+    plt.bar(
+        x + width / 2,
+        patients,
+        width,
+        label="Unique Patients",
+        color="#1abc9c",
+        edgecolor="#16a085",
+    )
 
     plt.xlabel("Split Partition", fontsize=11)
     plt.ylabel("Count", fontsize=11)
-    plt.title("Dataset Records vs. Unique Patients by Official Split", fontsize=13, fontweight="bold")
+    plt.title(
+        "Dataset Records vs. Unique Patients by Official Split", fontsize=13, fontweight="bold"
+    )
     plt.xticks(x, splits)
     plt.grid(axis="y", linestyle="--", alpha=0.4)
     plt.legend(frameon=True)
@@ -231,9 +241,9 @@ def plot_representative_ecgs(dataset: EchoNextDataset, figures_dir: Path) -> Pat
 
 
 def generate_markdown_report(
-    summary: Dict[str, Any],
-    isolation_res: Dict[str, Any],
-    alignment_res: Dict[str, Any],
+    summary: dict[str, Any],
+    isolation_res: dict[str, Any],
+    alignment_res: dict[str, Any],
     meta_df: pd.DataFrame,
     report_path: Path,
 ) -> None:
@@ -247,9 +257,9 @@ def generate_markdown_report(
 
     content = f"""# EchoNext Dataset Exploration Report (Phase 1)
 
-**Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
-**Project:** VentriQ — Left Ventricular Ejection Fraction (LVEF) & Structural Heart Disease Analysis  
-**Dataset Reference:** EchoNext v1.0.0 (PhysioNet / Columbia University Irving Medical Center)  
+**Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+**Project:** VentriQ — Left Ventricular Ejection Fraction (LVEF) & Structural Heart Disease Analysis
+**Dataset Reference:** EchoNext v1.0.0 (PhysioNet / Columbia University Irving Medical Center)
 
 ---
 
@@ -258,11 +268,11 @@ def generate_markdown_report(
 - **Total 12-Lead ECG Records:** {total_ecgs:,}
 - **Unique Patients:** {unique_patients:,}
 - **Mean ECGs per Patient:** {ecgs_per_pat:.2f}
-- **Sampling Frequency:** {summary['sampling_frequency_hz']} Hz
-- **Recording Duration:** {summary['duration_sec']} seconds ({EXPECTED_TIME_STEPS} time steps per lead)
-- **Number of Leads:** {len(summary['lead_names'])} standard leads ({', '.join(summary['lead_names'])})
-- **Patient Isolation (Zero Leakage):** {"PASSED (0 overlap)" if isolation_res.get('is_leak_free') else "FAILED (Leakage detected)"}
-- **Waveform-to-Metadata Row Alignment:** {"VERIFIED" if alignment_res.get('all_aligned') else "MISALIGNED"}
+- **Sampling Frequency:** {summary["sampling_frequency_hz"]} Hz
+- **Recording Duration:** {summary["duration_sec"]} seconds ({EXPECTED_TIME_STEPS} time steps per lead)
+- **Number of Leads:** {len(summary["lead_names"])} standard leads ({", ".join(summary["lead_names"])})
+- **Patient Isolation (Zero Leakage):** {"PASSED (0 overlap)" if isolation_res.get("is_leak_free") else "FAILED (Leakage detected)"}
+- **Waveform-to-Metadata Row Alignment:** {"VERIFIED" if alignment_res.get("all_aligned") else "MISALIGNED"}
 
 ---
 
@@ -300,14 +310,14 @@ EchoNext officially designates four split categories:
     for sp, count in splits.items():
         sub = meta_df[meta_df["split"] == sp] if "split" in meta_df.columns else pd.DataFrame()
         n_pats = sub[patient_col].nunique() if len(sub) and patient_col in sub.columns else count
-        ratio = (count / max(1, n_pats))
+        ratio = count / max(1, n_pats)
         content += f"| `{sp}` | {count:,} | {n_pats:,} | {ratio:.2f} |\n"
 
     content += f"""
 ### Cross-Split Patient Leakage Audit:
 
-- **Is Leak Free:** `{isolation_res.get('is_leak_free')}`
-- **Total Overlapping Patients Across Evaluation Splits:** `{isolation_res.get('total_overlapping_patients', 0)}`
+- **Is Leak Free:** `{isolation_res.get("is_leak_free")}`
+- **Total Overlapping Patients Across Evaluation Splits:** `{isolation_res.get("total_overlapping_patients", 0)}`
 - **Pairwise Overlaps:**
 """
     for pair, ov in isolation_res.get("overlaps", {}).items():
@@ -325,26 +335,26 @@ EchoNext officially designates four split categories:
 
 | Metric | Value |
 |---|---|
-| Valid Measurement Count | {lvef_stats.get('count', 0):,} |
-| Missing Count (% Missing) | {lvef_stats.get('missing', 0):,} ({lvef_stats.get('missing_pct', 0.0):.2f}%) |
-| Mean ± Std | {lvef_stats.get('mean', 0.0):.1f}% ± {lvef_stats.get('std', 0.0):.1f}% |
-| Median [IQR] | {lvef_stats.get('median', 0.0):.1f}% [{lvef_stats.get('q25', 0.0):.1f}% - {lvef_stats.get('q75', 0.0):.1f}%] |
-| Range (Min - Max) | {lvef_stats.get('min', 0.0):.1f}% - {lvef_stats.get('max', 0.0):.1f}% |
+| Valid Measurement Count | {lvef_stats.get("count", 0):,} |
+| Missing Count (% Missing) | {lvef_stats.get("missing", 0):,} ({lvef_stats.get("missing_pct", 0.0):.2f}%) |
+| Mean ± Std | {lvef_stats.get("mean", 0.0):.1f}% ± {lvef_stats.get("std", 0.0):.1f}% |
+| Median [IQR] | {lvef_stats.get("median", 0.0):.1f}% [{lvef_stats.get("q25", 0.0):.1f}% - {lvef_stats.get("q75", 0.0):.1f}%] |
+| Range (Min - Max) | {lvef_stats.get("min", 0.0):.1f}% - {lvef_stats.get("max", 0.0):.1f}% |
 
 ### Clinical Stratification:
 
-- **Severe Systolic Dysfunction (LVEF ≤ 35%):** {lvef_stats.get('severe_reduced_count', 0):,} records
-- **Moderate Systolic Dysfunction (35% < LVEF ≤ 45%):** {lvef_stats.get('moderate_reduced_count', 0):,} records
-- **Preserved Systolic Function (LVEF > 45%):** {lvef_stats.get('preserved_count', 0):,} records
+- **Severe Systolic Dysfunction (LVEF ≤ 35%):** {lvef_stats.get("severe_reduced_count", 0):,} records
+- **Moderate Systolic Dysfunction (35% < LVEF ≤ 45%):** {lvef_stats.get("moderate_reduced_count", 0):,} records
+- **Preserved Systolic Function (LVEF > 45%):** {lvef_stats.get("preserved_count", 0):,} records
 
 ### Binary Classification Targets:
 
 - **`lvef_lte_45_flag` (Moderate or Greater Dysfunction):**
-  - Positive Count: {binary_flags.get('lvef_lte_45_flag', {}).get('positive_count', 0):,}
-  - Prevalence: {binary_flags.get('lvef_lte_45_flag', {}).get('positive_prevalence_pct', 0.0):.2f}%
+  - Positive Count: {binary_flags.get("lvef_lte_45_flag", {}).get("positive_count", 0):,}
+  - Prevalence: {binary_flags.get("lvef_lte_45_flag", {}).get("positive_prevalence_pct", 0.0):.2f}%
 - **`shd_moderate_or_greater_flag` (Composite SHD Flag):**
-  - Positive Count: {binary_flags.get('shd_moderate_or_greater_flag', {}).get('positive_count', 0):,}
-  - Prevalence: {binary_flags.get('shd_moderate_or_greater_flag', {}).get('positive_prevalence_pct', 0.0):.2f}%
+  - Positive Count: {binary_flags.get("shd_moderate_or_greater_flag", {}).get("positive_count", 0):,}
+  - Prevalence: {binary_flags.get("shd_moderate_or_greater_flag", {}).get("positive_prevalence_pct", 0.0):.2f}%
 
 ---
 
@@ -398,10 +408,9 @@ def main() -> int:
     logger.info("Initializing EchoNext exploration on: %s", data_dir)
 
     # Check if raw dataset exists; if not, create mock dataset if permitted
-    has_meta = (
-        (data_dir / "EchoNext_metadata_100k.csv").exists()
-        or (data_dir / "echonext_metadata_100k.csv").exists()
-    )
+    has_meta = (data_dir / "EchoNext_metadata_100k.csv").exists() or (
+        data_dir / "echonext_metadata_100k.csv"
+    ).exists()
 
     if not has_meta:
         if args.create_mock_if_missing:
@@ -409,7 +418,9 @@ def main() -> int:
                 "EchoNext metadata not found at %s. Creating synthetic mock dataset for verification...",
                 data_dir,
             )
-            create_mock_echonext_dataset(data_dir, num_train=70, num_val=15, num_test=15, seed=args.seed)
+            create_mock_echonext_dataset(
+                data_dir, num_train=70, num_val=15, num_test=15, seed=args.seed
+            )
         else:
             logger.error("EchoNext dataset not found at %s. Aborting.", data_dir)
             return 1
@@ -442,12 +453,20 @@ def main() -> int:
     print(f"Total Records:           {summary['total_records']:,}")
     print(f"Unique Patients:         {summary['unique_patients']:,}")
     print(f"Split Distribution:      {summary['split_distribution']}")
-    print(f"Patient Isolation:       {'PASS (0 overlap)' if isolation_res.get('is_leak_free') else 'FAIL'}")
-    print(f"Waveform Alignment:      {'PASS (100% matched)' if alignment_res.get('all_aligned') else 'FAIL'}")
+    print(
+        f"Patient Isolation:       {'PASS (0 overlap)' if isolation_res.get('is_leak_free') else 'FAIL'}"
+    )
+    print(
+        f"Waveform Alignment:      {'PASS (100% matched)' if alignment_res.get('all_aligned') else 'FAIL'}"
+    )
     if "lvef_statistics" in summary and summary["lvef_statistics"]:
         lvef = summary["lvef_statistics"]
-        print(f"LVEF Distribution:       Mean {lvef['mean']:.1f}% | Median {lvef['median']:.1f}% | Std {lvef['std']:.1f}%")
-        print(f"Reduced LVEF (<=45%):    {lvef['severe_reduced_count'] + lvef['moderate_reduced_count']} records")
+        print(
+            f"LVEF Distribution:       Mean {lvef['mean']:.1f}% | Median {lvef['median']:.1f}% | Std {lvef['std']:.1f}%"
+        )
+        print(
+            f"Reduced LVEF (<=45%):    {lvef['severe_reduced_count'] + lvef['moderate_reduced_count']} records"
+        )
     print(f"Report Generated:        {report_path}")
     print("=" * 65 + "\n")
 

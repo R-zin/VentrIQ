@@ -14,11 +14,9 @@ This script executes the Phase 4 ECG paper generation pipeline:
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
-import json
-import logging
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import numpy as np
@@ -30,19 +28,14 @@ PROJECT_ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT_DIR))
 
-from src.data.dataset import DatasetManifest, ECGRecord, VentriQTorchDataset
+from src.data.dataset import DatasetManifest, VentriQTorchDataset
 from src.rendering.layout import ECGLayoutConfig, load_rendering_config
-from src.rendering.renderer import ECGImage, ECGPaperRenderer
+from src.rendering.renderer import ECGPaperRenderer
 from src.utils.logging import get_logger
 from src.utils.paths import (
-    FIGURES_DIR,
-    PROJECT_ROOT,
     REPORTS_DIR,
     SYNTHETIC_DATA_DIR,
-    get_figures_dir,
     get_raw_echonext_dir,
-    get_reports_dir,
-    get_synthetic_dir,
 )
 
 logger = get_logger("generate_ecg_images")
@@ -194,7 +187,9 @@ def generate_phase4_markdown_report(
         f"- **Train Partition Images:** `{split_counts.get('train', 0)}`",
         f"- **Validation Partition Images:** `{split_counts.get('val', 0)}`",
         f"- **Test Partition Images:** `{split_counts.get('test', 0)}`",
-        f"- **Mean LVEF Target:** `{lvef_vals.mean():.1f}%` (Median: `{lvef_vals.median():.1f}%`, Range: `[{lvef_vals.min():.1f}%, {lvef_vals.max():.1f}%]`)" if not lvef_vals.empty else "- **Mean LVEF:** N/A",
+        f"- **Mean LVEF Target:** `{lvef_vals.mean():.1f}%` (Median: `{lvef_vals.median():.1f}%`, Range: `[{lvef_vals.min():.1f}%, {lvef_vals.max():.1f}%]`)"
+        if not lvef_vals.empty
+        else "- **Mean LVEF:** N/A",
         f"- **Reduced LVEF Rate ($\\le 45\\%$):** `{lvef_lte_45_rate:.1f}%`",
         "",
         "All images are linked via `data/synthetic/image_manifest.csv` directly to canonical `record_id`, `patient_key`, and diagnostic labels.",
@@ -206,26 +201,30 @@ def generate_phase4_markdown_report(
     ]
 
     if sample_figure_rel:
-        lines.extend([
-            f"![Representative Rendered ECG Paper]({sample_figure_rel})",
-            "",
-            "> *Figure 1: High-fidelity clinical ECG paper recording rendered from EchoNext digital waveform. Features standard 1mm/5mm pink grid, 3x4 12-lead arrangement (2.5s each), Lead II continuous rhythm strip (10.0s), 1.0 mV calibration pulses, and clinical patient/device header.*",
-            "",
-        ])
+        lines.extend(
+            [
+                f"![Representative Rendered ECG Paper]({sample_figure_rel})",
+                "",
+                "> *Figure 1: High-fidelity clinical ECG paper recording rendered from EchoNext digital waveform. Features standard 1mm/5mm pink grid, 3x4 12-lead arrangement (2.5s each), Lead II continuous rhythm strip (10.0s), 1.0 mV calibration pulses, and clinical patient/device header.*",
+                "",
+            ]
+        )
 
-    lines.extend([
-        "---",
-        "",
-        "## 5. Verification Checklist",
-        "",
-        "- [x] Standard 3x4 lead layout with continuous Lead II rhythm strip verified.",
-        "- [x] 1.0 mm minor grid lines and 5.0 mm major grid lines precisely aligned to physical time/voltage scales.",
-        "- [x] Standard 1.0 mV (10 mm) x 0.20 s (5 mm) calibration pulses drawn on row baselines.",
-        "- [x] Waveform-to-image manifest strictly preserves mapping to original LVEF targets.",
-        "- [x] Zero patient leakage preserved across synthetic image partitions.",
-        "- [x] PyTorch dataset loader interface integration verified (`transform=renderer`).",
-        "",
-    ])
+    lines.extend(
+        [
+            "---",
+            "",
+            "## 5. Verification Checklist",
+            "",
+            "- [x] Standard 3x4 lead layout with continuous Lead II rhythm strip verified.",
+            "- [x] 1.0 mm minor grid lines and 5.0 mm major grid lines precisely aligned to physical time/voltage scales.",
+            "- [x] Standard 1.0 mV (10 mm) x 0.20 s (5 mm) calibration pulses drawn on row baselines.",
+            "- [x] Waveform-to-image manifest strictly preserves mapping to original LVEF targets.",
+            "- [x] Zero patient leakage preserved across synthetic image partitions.",
+            "- [x] PyTorch dataset loader interface integration verified (`transform=renderer`).",
+            "",
+        ]
+    )
 
     report_text = "\n".join(lines)
     output_path.write_text(report_text, encoding="utf-8")
@@ -259,7 +258,9 @@ def main() -> int:
         manifest = DatasetManifest.load(args.manifest_path)
         records = manifest.records
     else:
-        logger.info(f"Manifest not found at {args.manifest_path}; loading directly from EchoNext dataset: {args.data_dir}")
+        logger.info(
+            f"Manifest not found at {args.manifest_path}; loading directly from EchoNext dataset: {args.data_dir}"
+        )
         dataset = VentriQTorchDataset(root=args.data_dir)
         records = dataset.records
 
@@ -314,24 +315,28 @@ def main() -> int:
             except ValueError:
                 rel_path = img_path
 
-            manifest_rows.append({
-                "image_path": str(rel_path),
-                "record_id": rec.record_id,
-                "patient_key": rec.patient_key,
-                "split": rec.split,
-                "lvef_value": rec.lvef_target,
-                "lvef_lte_45_flag": rec.lvef_lte_45_label,
-                "shd_flag": rec.shd_label,
-                "image_width": ecg_img.width,
-                "image_height": ecg_img.height,
-                "dpi": cfg.dpi,
-            })
+            manifest_rows.append(
+                {
+                    "image_path": str(rel_path),
+                    "record_id": rec.record_id,
+                    "patient_key": rec.patient_key,
+                    "split": rec.split,
+                    "lvef_value": rec.lvef_target,
+                    "lvef_lte_45_flag": rec.lvef_lte_45_label,
+                    "shd_flag": rec.shd_label,
+                    "image_width": ecg_img.width,
+                    "image_height": ecg_img.height,
+                    "dpi": cfg.dpi,
+                }
+            )
 
     # Save manifest CSV
     manifest_df = pd.DataFrame(manifest_rows)
     manifest_csv_path = output_root / "image_manifest.csv"
     manifest_df.to_csv(manifest_csv_path, index=False)
-    logger.info(f"Saved synthetic image manifest to {manifest_csv_path} ({len(manifest_df)} records)")
+    logger.info(
+        f"Saved synthetic image manifest to {manifest_csv_path} ({len(manifest_df)} records)"
+    )
 
     # Save representative figure to reports/figures
     figures_dir = Path(args.report_dir) / "figures"

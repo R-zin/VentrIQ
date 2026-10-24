@@ -18,36 +18,60 @@ from src.data.splits import (
 @pytest.fixture
 def mock_clean_split_df() -> pd.DataFrame:
     """Fixture with clean, patient-isolated splits (no leakage)."""
-    return pd.DataFrame({
-        "patient_key": [
-            "P001", "P001", "P002", "P003",  # train: 4 records, 3 patients
-            "P004", "P005",                  # val: 2 records, 2 patients
-            "P006", "P007", "P007",          # test: 3 records, 2 patients
-        ],
-        "split": [
-            "train", "train", "train", "train",
-            "val", "val",
-            "test", "test", "test",
-        ],
-        "lvef_lte_45_flag": [0, 0, 1, 0, 1, 0, 1, 0, 0],
-    })
+    return pd.DataFrame(
+        {
+            "patient_key": [
+                "P001",
+                "P001",
+                "P002",
+                "P003",  # train: 4 records, 3 patients
+                "P004",
+                "P005",  # val: 2 records, 2 patients
+                "P006",
+                "P007",
+                "P007",  # test: 3 records, 2 patients
+            ],
+            "split": [
+                "train",
+                "train",
+                "train",
+                "train",
+                "val",
+                "val",
+                "test",
+                "test",
+                "test",
+            ],
+            "lvef_lte_45_flag": [0, 0, 1, 0, 1, 0, 1, 0, 0],
+        }
+    )
 
 
 @pytest.fixture
 def mock_leaking_split_df() -> pd.DataFrame:
     """Fixture with deliberate patient leakage across train and val/test splits."""
-    return pd.DataFrame({
-        "patient_key": [
-            "P001", "P002", "P003",  # train
-            "P002", "P004",          # val: P002 leaked from train!
-            "P001", "P005",          # test: P001 leaked from train!
-        ],
-        "split": [
-            "train", "train", "train",
-            "val", "val",
-            "test", "test",
-        ],
-    })
+    return pd.DataFrame(
+        {
+            "patient_key": [
+                "P001",
+                "P002",
+                "P003",  # train
+                "P002",
+                "P004",  # val: P002 leaked from train!
+                "P001",
+                "P005",  # test: P001 leaked from train!
+            ],
+            "split": [
+                "train",
+                "train",
+                "train",
+                "val",
+                "val",
+                "test",
+                "test",
+            ],
+        }
+    )
 
 
 def test_verify_patient_isolation_clean(mock_clean_split_df):
@@ -153,7 +177,9 @@ def test_stratified_patient_kfold():
     splitter = StratifiedPatientKFold(n_splits=3, shuffle=True, random_state=42)
     val_records_seen = []
 
-    for fold, (train_idx, val_idx) in enumerate(splitter.split(all_patients, y=labels, groups=all_patients)):
+    for fold, (train_idx, val_idx) in enumerate(
+        splitter.split(all_patients, y=labels, groups=all_patients)
+    ):
         train_pats = set(all_patients[i] for i in train_idx)
         val_pats = set(all_patients[i] for i in val_idx)
         assert len(train_pats.intersection(val_pats)) == 0, f"Patient leak in fold {fold}"

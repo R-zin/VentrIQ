@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-and-verify:
-    name: Test & Verify Pipeline (Phases 1, 2, 3, & 4)
+  lint-and-format:
+    name: Lint & Code Style Check (Ruff)
     runs-on: ubuntu-latest
 
     steps:
@@ -28,14 +28,90 @@ jobs:
           enable-cache: true
           version: "latest"
 
-      - name: Set up Python
+      - name: Set up Python 3.12
         run: uv python install 3.12
 
       - name: Install dependencies
         run: uv sync
 
-      - name: Run Unit Tests (Phases 1, 2, 3, & 4)
-        run: uv run pytest tests/ -v
+      - name: Run Ruff Linter
+        run: uv run ruff check src scripts tests
+
+      - name: Run Ruff Format Verification
+        run: uv run ruff format --check src scripts tests
+
+  type-check:
+    name: Static Type Analysis (Mypy)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run Mypy Type Checker
+        run: uv run mypy src
+
+  unit-and-stress-tests:
+    name: Unit, Stress & Coverage Tests (Pytest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run Full Test Suite with Coverage
+        run: uv run pytest --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=85
+
+      - name: Upload Coverage XML Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: code-coverage-report
+          path: coverage.xml
+
+  pipeline-integration:
+    name: Clinical Pipeline Integration (Phases 1 - 5)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          version: "latest"
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
 
       - name: Run Phase 1 Dataset Exploration & Verification
         run: uv run python scripts/explore_dataset.py --report-dir reports/
@@ -48,6 +124,9 @@ jobs:
 
       - name: Run Phase 4 ECG Waveform-to-Image Paper Renderer
         run: uv run python scripts/generate_ecg_images.py --report-dir reports/ --num-samples 5
+
+      - name: Run Phase 5 Smartphone Vision Simulation & Rectification
+        run: uv run python scripts/validate_pipeline.py --report-dir reports/ --num-samples 5
 
       - name: Verify Pipeline Artifacts Exist
         run: |
@@ -64,7 +143,9 @@ jobs:
           test -f reports/phase4_rendering_report.md
           test -f reports/figures/rendered_ecg_sample.png
           test -f data/synthetic/image_manifest.csv
-          echo "All Phase 1, Phase 2, Phase 3, and Phase 4 reports, figures, and data artifacts successfully verified!"
+          test -f reports/phase5_vision_report.md
+          test -f reports/figures/vision_pipeline_stages.png
+          echo "All Phase 1, Phase 2, Phase 3, Phase 4, and Phase 5 reports, figures, and data artifacts successfully verified!"
 
       - name: Upload Pipeline Artifacts
         uses: actions/upload-artifact@v4
@@ -75,4 +156,3 @@ jobs:
             reports/
             data/processed/quality_summary.json
             data/synthetic/image_manifest.csv
-

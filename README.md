@@ -196,12 +196,20 @@ cd VentriQ
 uv sync
 ```
 
-### 2. Running Unit Tests
+### 2. Running Quality Gates & Tests
 
-Execute the comprehensive test suite (84 unit tests):
+Execute the comprehensive test suite (94 unit, stress, and robustness tests with coverage enforcement):
 
 ```bash
-uv run pytest tests/ -v
+# Run pytest with full coverage report and XML export
+uv run pytest --cov=src --cov-report=term-missing --cov-report=xml --cov-fail-under=85
+
+# Run Ruff linter and formatting checks
+uv run ruff check src scripts tests
+uv run ruff format --check src scripts tests
+
+# Run Mypy static type checking
+uv run mypy src
 ```
 
 ### 3. Running Preprocessing, Exploration & Manifest Scripts
@@ -265,5 +273,5 @@ uv run python scripts/validate_pipeline.py --report-dir reports/ --num-samples 5
 - **Phase 5 Smartphone Vision Report:** [`reports/phase5_vision_report.md`](reports/phase5_vision_report.md)
 - **Canonical Dataset Manifest:** [`reports/dataset_manifest.json`](reports/dataset_manifest.json)
 - **Synthetic Image Manifest:** [`data/synthetic/image_manifest.csv`](data/synthetic/image_manifest.csv)
-- **Unit Tests:** 84 passing tests (100% pass rate) covering dataset loading, memory-mapping, patient isolation, zero-phase filtering, fault detection, PyTorch zero-copy dataset slicing, multi-worker safety, GroupKFold, clinical ECG paper geometry, calibration pulses, waveform rendering, 3D perspective distortion, corner detection, homography rectification, shadow division normalization, and MobileNetV3 tensors.
-- **Continuous Integration:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) validates all tests and runs automated reporting on pushes and PRs.
+- **Unit & Stress Tests:** 94 passing tests (100% pass rate, 90.12% code coverage) covering dataset loading, memory-mapping, patient isolation, zero-phase filtering, fault detection, PyTorch zero-copy dataset slicing, multi-worker safety, GroupKFold, clinical ECG paper geometry, calibration pulses, waveform rendering, 3D perspective distortion, corner detection, homography rectification, shadow division normalization, MobileNetV3 tensors, boundary stress conditions, and multi-worker DataLoader concurrency.
+- **Continuous Integration:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) executes a 4-stage parallel quality gate: Ruff code style linting, Mypy static typing, Pytest coverage enforcement (minimum 85%), and clinical pipeline end-to-end integration artifact verification.

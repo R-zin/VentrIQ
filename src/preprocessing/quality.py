@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from dataclasses import asdict, dataclass, field
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from scipy import signal as scipy_signal
@@ -71,9 +71,7 @@ class ECGQualityEvaluator:
         self.min_snr_db = min_acceptable_snr_db
         self.max_faulty_leads = max_allowed_faulty_leads
 
-    def validate_shape_and_values(
-        self, ecg: Any
-    ) -> Tuple[bool, List[str], Optional[np.ndarray]]:
+    def validate_shape_and_values(self, ecg: Any) -> Tuple[bool, List[str], Optional[np.ndarray]]:
         """Validate array dimensions, types, and finiteness.
 
         Returns:
@@ -96,7 +94,9 @@ class ECGQualityEvaluator:
         if arr.ndim != 2:
             return (
                 False,
-                [f"Expected 2D array (samples, leads), got {arr.ndim}D array with shape {arr.shape}"],
+                [
+                    f"Expected 2D array (samples, leads), got {arr.ndim}D array with shape {arr.shape}"
+                ],
                 None,
             )
 
@@ -127,9 +127,7 @@ class ECGQualityEvaluator:
         for lead_idx in range(n_leads):
             signal_lead = ecg[:, lead_idx]
             lead_name = (
-                self.lead_names[lead_idx]
-                if lead_idx < len(self.lead_names)
-                else f"Lead_{lead_idx}"
+                self.lead_names[lead_idx] if lead_idx < len(self.lead_names) else f"Lead_{lead_idx}"
             )
 
             # Check full-lead variance
@@ -160,9 +158,7 @@ class ECGQualityEvaluator:
         for lead_idx in range(n_leads):
             signal_lead = ecg[:, lead_idx]
             lead_name = (
-                self.lead_names[lead_idx]
-                if lead_idx < len(self.lead_names)
-                else f"Lead_{lead_idx}"
+                self.lead_names[lead_idx] if lead_idx < len(self.lead_names) else f"Lead_{lead_idx}"
             )
 
             # Check if values sit consecutively at the extreme min or max
@@ -179,8 +175,9 @@ class ECGQualityEvaluator:
             zero_diffs = np.isclose(diffs, 0.0, atol=1e-5)
 
             # Find consecutive flat runs
-            is_at_extremes = np.isclose(signal_lead[:-1], lead_min, atol=1e-3 * lead_range) | \
-                             np.isclose(signal_lead[:-1], lead_max, atol=1e-3 * lead_range)
+            is_at_extremes = np.isclose(
+                signal_lead[:-1], lead_min, atol=1e-3 * lead_range
+            ) | np.isclose(signal_lead[:-1], lead_max, atol=1e-3 * lead_range)
             clipped_samples = zero_diffs & is_at_extremes
 
             # Run-length check
@@ -213,9 +210,7 @@ class ECGQualityEvaluator:
         for lead_idx in range(n_leads):
             signal_lead = ecg[:, lead_idx]
             lead_name = (
-                self.lead_names[lead_idx]
-                if lead_idx < len(self.lead_names)
-                else f"Lead_{lead_idx}"
+                self.lead_names[lead_idx] if lead_idx < len(self.lead_names) else f"Lead_{lead_idx}"
             )
 
             # Detrend for spectral analysis
@@ -228,7 +223,7 @@ class ECGQualityEvaluator:
             # Cardiac band: 0.5 - 40 Hz (primary QRS, T-wave energy)
             cardiac_mask = (freqs >= 0.5) & (freqs <= 40.0)
             # High-frequency noise band: 45 - Nyquist
-            noise_mask = (freqs >= 45.0)
+            noise_mask = freqs >= 45.0
 
             power_signal = float(np.sum(psd[cardiac_mask]))
             power_noise = float(np.sum(psd[noise_mask])) + 1e-12
@@ -251,9 +246,7 @@ class ECGQualityEvaluator:
         for lead_idx in range(n_leads):
             sig = ecg[:, lead_idx]
             lead_name = (
-                self.lead_names[lead_idx]
-                if lead_idx < len(self.lead_names)
-                else f"Lead_{lead_idx}"
+                self.lead_names[lead_idx] if lead_idx < len(self.lead_names) else f"Lead_{lead_idx}"
             )
             metrics[lead_name] = {
                 "mean": round(float(np.mean(sig)), 4),
@@ -264,9 +257,7 @@ class ECGQualityEvaluator:
             }
         return metrics
 
-    def evaluate(
-        self, ecg: Any, lead_names: Optional[List[str]] = None
-    ) -> QualityReport:
+    def evaluate(self, ecg: Any, lead_names: Optional[List[str]] = None) -> QualityReport:
         """Perform comprehensive quality evaluation of an ECG array.
 
         Args:

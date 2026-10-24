@@ -11,12 +11,10 @@ Tests cover:
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
-from PIL import Image, ImageDraw
 import pytest
 import torch
+from PIL import Image, ImageDraw
 
 from src.preprocessing.perspective import (
     STANDARD_PAPER_ASPECT_RATIO,
@@ -33,19 +31,22 @@ from src.rendering.augmentation import (
 
 
 @pytest.fixture
-def synthetic_tilted_document() -> Tuple[Image.Image, np.ndarray]:
+def synthetic_tilted_document() -> tuple[Image.Image, np.ndarray]:
     """Generate a clean synthetic tilted document on a dark background."""
     w, h = 800, 600
     img = Image.new("RGB", (w, h), "#262626")
     draw = ImageDraw.Draw(img)
 
     # Document corners [TL, TR, BR, BL]
-    corners = np.array([
-        [160.0, 110.0],
-        [660.0, 130.0],
-        [630.0, 510.0],
-        [130.0, 480.0],
-    ], dtype=np.float32)
+    corners = np.array(
+        [
+            [160.0, 110.0],
+            [660.0, 130.0],
+            [630.0, 510.0],
+            [130.0, 480.0],
+        ],
+        dtype=np.float32,
+    )
 
     poly = [tuple(pt) for pt in corners]
     draw.polygon(poly, fill="#ffffff")
@@ -140,7 +141,11 @@ def test_rectification_on_simulated_smartphone_ecg():
     for y in range(0, canonical_h, 20):
         draw.line([(0, y), (canonical_w, y)], fill="#fecaca", width=1)
     # Draw distinct trace
-    draw.line([(0, 190), (100, 190), (150, 80), (200, 280), (250, 190), (560, 190)], fill="#111827", width=3)
+    draw.line(
+        [(0, 190), (100, 190), (150, 80), (200, 280), (250, 190), (560, 190)],
+        fill="#111827",
+        width=3,
+    )
 
     # Distort with SmartphoneECGSimulator (mild tilt)
     cfg = DistortionConfig.from_preset("mild")

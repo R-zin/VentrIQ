@@ -16,12 +16,11 @@ Tests cover:
 from __future__ import annotations
 
 from pathlib import Path
-import tempfile
 
 import numpy as np
-from PIL import Image
 import pytest
 import torch
+from PIL import Image
 
 from src.rendering.augmentation import (
     DistortionConfig,
@@ -45,10 +44,10 @@ def sample_image() -> Image.Image:
     """Generate a simple test image with distinct quadrant colors."""
     img = Image.new("RGB", (200, 150), "#ffffff")
     arr = np.array(img)
-    arr[:75, :100] = [255, 0, 0]      # Red top-left
-    arr[:75, 100:] = [0, 255, 0]      # Green top-right
-    arr[75:, :100] = [0, 0, 255]      # Blue bottom-left
-    arr[75:, 100:] = [255, 255, 0]    # Yellow bottom-right
+    arr[:75, :100] = [255, 0, 0]  # Red top-left
+    arr[:75, 100:] = [0, 255, 0]  # Green top-right
+    arr[75:, :100] = [0, 0, 255]  # Blue bottom-left
+    arr[75:, 100:] = [255, 255, 0]  # Yellow bottom-right
     return Image.fromarray(arr)
 
 
@@ -147,7 +146,9 @@ def test_cast_shadow_simulation(sample_image):
 
 def test_specular_glare(sample_image):
     """Verify localized specular reflection increases brightness."""
-    glared = apply_specular_glare(sample_image, glare_intensity=0.5, center=(100.0, 75.0), radius=20.0)
+    glared = apply_specular_glare(
+        sample_image, glare_intensity=0.5, center=(100.0, 75.0), radius=20.0
+    )
     assert glared.size == sample_image.size
 
     arr_orig = np.array(sample_image, dtype=float)

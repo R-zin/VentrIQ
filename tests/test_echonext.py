@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 import tempfile
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -110,12 +111,14 @@ def test_patient_isolation_detects_leak():
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
         # Create metadata with an intentional patient leak between train and val
-        df = pd.DataFrame([
-            {"patient_key": "PAT001", "split": "train", "lvef_value": 55.0},
-            {"patient_key": "PAT002", "split": "train", "lvef_value": 60.0},
-            {"patient_key": "PAT001", "split": "val", "lvef_value": 55.0},  # LEAK!
-            {"patient_key": "PAT003", "split": "test", "lvef_value": 40.0},
-        ])
+        df = pd.DataFrame(
+            [
+                {"patient_key": "PAT001", "split": "train", "lvef_value": 55.0},
+                {"patient_key": "PAT002", "split": "train", "lvef_value": 60.0},
+                {"patient_key": "PAT001", "split": "val", "lvef_value": 55.0},  # LEAK!
+                {"patient_key": "PAT003", "split": "test", "lvef_value": 40.0},
+            ]
+        )
         df.to_csv(tmp_path / "EchoNext_metadata_100k.csv", index=False)
         ds = EchoNextDataset(tmp_path)
         res = ds.verify_patient_isolation()

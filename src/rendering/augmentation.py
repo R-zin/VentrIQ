@@ -13,16 +13,16 @@ photographs an ECG recording with a smartphone camera:
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
 import io
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter, ImageOps
-from scipy import ndimage
 import torch
+from PIL import Image, ImageDraw, ImageFilter
+from scipy import ndimage
 
 from src.rendering.renderer import ECGImage
 
@@ -143,9 +143,12 @@ class DistortionConfig:
         return presets[preset_name]
 
 
-def load_augmentation_config(config_path: Optional[Union[str, Path]] = None, preset: Optional[str] = None) -> DistortionConfig:
+def load_augmentation_config(
+    config_path: Optional[Union[str, Path]] = None, preset: Optional[str] = None
+) -> DistortionConfig:
     """Load DistortionConfig from YAML file or named preset."""
     import yaml
+
     from src.utils.paths import CONFIGS_DIR
 
     if preset is not None:
@@ -153,7 +156,9 @@ def load_augmentation_config(config_path: Optional[Union[str, Path]] = None, pre
 
     target_path = Path(config_path) if config_path else CONFIGS_DIR / "augmentation.yaml"
     if not target_path.exists():
-        logger.warning(f"Augmentation config not found at {target_path}; returning default moderate config.")
+        logger.warning(
+            f"Augmentation config not found at {target_path}; returning default moderate config."
+        )
         return DistortionConfig.from_preset("moderate")
 
     with open(target_path, "r", encoding="utf-8") as f:
@@ -195,9 +200,9 @@ class SimulatedECGPhoto:
     """Container for a simulated smartphone photograph with ground-truth geometry."""
 
     image: Image.Image
-    corners_canonical: np.ndarray    # Shape (4, 2): [TL, TR, BR, BL] in canonical paper pixels
+    corners_canonical: np.ndarray  # Shape (4, 2): [TL, TR, BR, BL] in canonical paper pixels
     corners_transformed: np.ndarray  # Shape (4, 2): [TL, TR, BR, BL] in output photo coordinates
-    homography_matrix: np.ndarray    # Shape (3, 3): Projective matrix canonical -> photo
+    homography_matrix: np.ndarray  # Shape (3, 3): Projective matrix canonical -> photo
     metadata: Dict[str, Any]
 
     @property
@@ -289,12 +294,15 @@ def compute_3d_perspective_homography(
             - canonical_corners: Array of shape (4, 2) [TL, TR, BR, BL]
     """
     w, h = float(width), float(height)
-    canonical = np.array([
-        [0.0, 0.0],      # Top-Left
-        [w, 0.0],        # Top-Right
-        [w, h],          # Bottom-Right
-        [0.0, h],        # Bottom-Left
-    ], dtype=np.float64)
+    canonical = np.array(
+        [
+            [0.0, 0.0],  # Top-Left
+            [w, 0.0],  # Top-Right
+            [w, h],  # Bottom-Right
+            [0.0, h],  # Bottom-Left
+        ],
+        dtype=np.float64,
+    )
 
     # Convert angles to radians
     rx = np.radians(pitch_deg)
@@ -302,21 +310,27 @@ def compute_3d_perspective_homography(
     rz = np.radians(roll_deg)
 
     # 3D Rotation matrices
-    Rx = np.array([
-        [1.0, 0.0, 0.0],
-        [0.0, np.cos(rx), -np.sin(rx)],
-        [0.0, np.sin(rx), np.cos(rx)],
-    ])
-    Ry = np.array([
-        [np.cos(ry), 0.0, np.sin(ry)],
-        [0.0, 1.0, 0.0],
-        [-np.sin(ry), 0.0, np.cos(ry)],
-    ])
-    Rz = np.array([
-        [np.cos(rz), -np.sin(rz), 0.0],
-        [np.sin(rz), np.cos(rz), 0.0],
-        [0.0, 0.0, 1.0],
-    ])
+    Rx = np.array(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, np.cos(rx), -np.sin(rx)],
+            [0.0, np.sin(rx), np.cos(rx)],
+        ]
+    )
+    Ry = np.array(
+        [
+            [np.cos(ry), 0.0, np.sin(ry)],
+            [0.0, 1.0, 0.0],
+            [-np.sin(ry), 0.0, np.cos(ry)],
+        ]
+    )
+    Rz = np.array(
+        [
+            [np.cos(rz), -np.sin(rz), 0.0],
+            [np.sin(rz), np.cos(rz), 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
     R = Rz @ Ry @ Rx
 
     # Focal distance and camera center
@@ -431,7 +445,7 @@ def apply_illumination_gradient(
     dist = np.sqrt((x_coords - cx) ** 2 + (y_coords - cy) ** 2) / (max_radius + 1e-6)
 
     # Illumination factor: 1.0 at center, falling off to (1.0 - vignette_strength) at corners
-    vignette_map = 1.0 - (vignette_strength * (dist ** 1.5))
+    vignette_map = 1.0 - (vignette_strength * (dist**1.5))
     vignette_map = np.clip(vignette_map, 0.0, 1.0).astype(np.float32)
 
     arr = np.array(image, dtype=np.float32)
@@ -511,7 +525,7 @@ def apply_specular_glare(
     y_coords, x_coords = np.ogrid[:h, :w]
     dist_sq = (x_coords - gx) ** 2 + (y_coords - gy) ** 2
     # Gaussian bell curve for reflection hotspot
-    glare_map = glare_intensity * 255.0 * np.exp(-dist_sq / (2.0 * (r ** 2)))
+    glare_map = glare_intensity * 255.0 * np.exp(-dist_sq / (2.0 * (r**2)))
 
     arr = np.array(image, dtype=np.float32)
     for c in range(3):
@@ -595,7 +609,7 @@ class SmartphoneECGSimulator:
         # Step 1: Subtle Paper Curvature (Page Curl)
         if self.config.enable_page_curl:
             amp = rand.uniform(*self.config.curl_amplitude_range)
-            axis = rand.choice(["horizontal", "vertical"])
+            axis = str(rand.choice(["horizontal", "vertical"]))
             src_img = apply_page_curl(src_img, amplitude_px=amp, axis=axis)
 
         # Step 2: 3D Camera Pose & Perspective Transformation
@@ -653,7 +667,9 @@ class SmartphoneECGSimulator:
         # Step 3: Illumination & Lighting Variations
         if self.config.enable_illumination:
             vignette = rand.uniform(*self.config.vignette_strength_range)
-            final_photo = apply_illumination_gradient(final_photo, vignette_strength=vignette, rng=rand)
+            final_photo = apply_illumination_gradient(
+                final_photo, vignette_strength=vignette, rng=rand
+            )
 
         # Step 4: Cast Shadow Simulation
         if self.config.enable_shadows:

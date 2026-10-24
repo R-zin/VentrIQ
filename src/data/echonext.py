@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -50,7 +50,7 @@ class EchoNextDataset:
         self,
         root: Union[str, Path],
         split: Optional[str] = None,
-        mmap_mode: str = "r",
+        mmap_mode: Optional[Literal["r+", "r", "w+", "c"]] = "r",
         validate_files: bool = False,
     ) -> None:
         """Initialize the EchoNext dataset.
@@ -245,7 +245,8 @@ class EchoNextDataset:
         """Return full metadata row as a dictionary."""
         if index < 0 or index >= len(self.metadata):
             raise IndexError(f"Index {index} out of range for dataset of size {len(self.metadata)}")
-        record = self.metadata.iloc[index].to_dict()
+        raw_record = self.metadata.iloc[index].to_dict()
+        record: Dict[str, Any] = {str(k): v for k, v in raw_record.items()}
         record.pop("_split_local_index", None)
         return record
 
@@ -343,7 +344,8 @@ class EchoNextDataset:
         # Split counts
         split_counts: Dict[str, int] = {}
         if SPLIT_COLUMN in df.columns:
-            split_counts = df[SPLIT_COLUMN].value_counts(dropna=False).to_dict()
+            raw_counts = df[SPLIT_COLUMN].value_counts(dropna=False).to_dict()
+            split_counts = {str(k): int(v) for k, v in raw_counts.items()}
 
         # Target statistics (LVEF)
         lvef_stats: Dict[str, Any] = {}

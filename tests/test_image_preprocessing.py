@@ -13,9 +13,9 @@ Tests cover:
 from __future__ import annotations
 
 import numpy as np
-from PIL import Image, ImageDraw
 import pytest
 import torch
+from PIL import Image, ImageDraw
 from torch.utils.data import DataLoader, Dataset
 
 from src.preprocessing.image import (
@@ -25,8 +25,6 @@ from src.preprocessing.image import (
     normalize_illumination,
 )
 from src.preprocessing.transforms import (
-    IMAGENET_MEAN,
-    IMAGENET_STD,
     MobileNetV3Preprocessor,
     extract_12_lead_crops,
     image_to_mobilenet_tensor,
@@ -45,7 +43,11 @@ def shadowed_ecg_canvas() -> Image.Image:
     for y in range(0, 300, 20):
         draw.line([(0, y), (400, y)], fill="#fecaca", width=1)
     # Add ECG trace
-    draw.line([(0, 150), (100, 150), (130, 60), (160, 220), (190, 150), (400, 150)], fill="#111827", width=2)
+    draw.line(
+        [(0, 150), (100, 150), (130, 60), (160, 220), (190, 150), (400, 150)],
+        fill="#111827",
+        width=2,
+    )
 
     # Cast shadow across top-left corner
     poly = [(0, 0), (220, 0), (0, 180)]
@@ -155,10 +157,13 @@ def test_mobilenet_preprocessor_end_to_end(shadowed_ecg_canvas):
 
 def test_dataloader_with_mobilenet_preprocessor():
     """Verify PyTorch DataLoader collates batches of MobileNetV3 preprocessed tensors."""
+
     class DummyImageDataset(Dataset):
         def __init__(self, count=4):
             self.count = count
-            self.preprocessor = MobileNetV3Preprocessor(target_size=(224, 224), apply_rectification=False)
+            self.preprocessor = MobileNetV3Preprocessor(
+                target_size=(224, 224), apply_rectification=False
+            )
 
         def __len__(self):
             return self.count

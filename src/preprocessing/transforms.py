@@ -7,11 +7,11 @@ model-ready PyTorch tensors formatted for MobileNetV3 backbones.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import List, Tuple, Union
 
 import numpy as np
-from PIL import Image
 import torch
+from PIL import Image
 
 from src.preprocessing.image import ECGImageEnhancer
 from src.preprocessing.perspective import DocumentRectifier
@@ -60,8 +60,16 @@ def image_to_mobilenet_tensor(
         tensor = tensor.permute(2, 0, 1)  # (3, H, W)
 
     if normalize_imagenet:
-        mean = torch.tensor(IMAGENET_MEAN, dtype=torch.float32).view(3, 1, 1) if channels_first else torch.tensor(IMAGENET_MEAN, dtype=torch.float32)
-        std = torch.tensor(IMAGENET_STD, dtype=torch.float32).view(3, 1, 1) if channels_first else torch.tensor(IMAGENET_STD, dtype=torch.float32)
+        mean = (
+            torch.tensor(IMAGENET_MEAN, dtype=torch.float32).view(3, 1, 1)
+            if channels_first
+            else torch.tensor(IMAGENET_MEAN, dtype=torch.float32)
+        )
+        std = (
+            torch.tensor(IMAGENET_STD, dtype=torch.float32).view(3, 1, 1)
+            if channels_first
+            else torch.tensor(IMAGENET_STD, dtype=torch.float32)
+        )
         tensor = (tensor - mean) / std
 
     return tensor.contiguous()
@@ -141,7 +149,9 @@ class MobileNetV3Preprocessor:
         self.extract_lead_crops = extract_lead_crops
         self.rectified_resolution = rectified_resolution
 
-        self.rectifier = DocumentRectifier(target_size=rectified_resolution) if apply_rectification else None
+        self.rectifier = (
+            DocumentRectifier(target_size=rectified_resolution) if apply_rectification else None
+        )
         self.enhancer = ECGImageEnhancer() if apply_enhancement else None
 
     def __call__(

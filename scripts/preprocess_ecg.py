@@ -13,12 +13,11 @@ This script executes Phase 2 preprocessing and quality evaluation:
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
 import json
-import logging
-from pathlib import Path
 import sys
-from typing import Any, Dict, List, Optional
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Optional
 
 # Ensure project root is in sys.path
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -26,27 +25,23 @@ if str(PROJECT_ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT_DIR))
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
 from src.data.echonext import (
     EXPECTED_TIME_STEPS,
-    NUM_LEADS,
     RECORDING_DURATION_SEC,
     SAMPLING_RATE_HZ,
     STANDARD_12_LEADS,
     EchoNextDataset,
     create_mock_echonext_dataset,
 )
-from src.preprocessing.quality import ECGQualityEvaluator, QualityReport
-from src.preprocessing.signal import ECGSignalPreprocessor, ProcessedECG
+from src.preprocessing.signal import ECGSignalPreprocessor
 from src.utils.logging import get_logger
 from src.utils.paths import (
     CONFIGS_DIR,
-    DATA_DIR,
-    FIGURES_DIR,
     PROCESSED_DATA_DIR,
     REPORTS_DIR,
     get_raw_echonext_dir,
@@ -164,9 +159,9 @@ def plot_lead_quality_distribution(
     out_path = figures_dir / "lead_quality_distribution.png"
 
     leads = STANDARD_12_LEADS
-    flat_counts = [fault_counts["flatline"].get(l, 0) for l in leads]
-    clip_counts = [fault_counts["clipping"].get(l, 0) for l in leads]
-    noise_counts = [fault_counts["noisy"].get(l, 0) for l in leads]
+    flat_counts = [fault_counts["flatline"].get(lead_name, 0) for lead_name in leads]
+    clip_counts = [fault_counts["clipping"].get(lead_name, 0) for lead_name in leads]
+    noise_counts = [fault_counts["noisy"].get(lead_name, 0) for lead_name in leads]
 
     x = np.arange(len(leads))
     width = 0.25
@@ -206,9 +201,9 @@ def generate_phase2_report(
     """Compile Phase 2 Quality Control Report in markdown format."""
     content = f"""# VentriQ — Phase 2 Quality Control & Signal Preprocessing Report
 
-**Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  
-**Scope:** Signal Sanity, Quality Evaluation, Configurable Zero-Phase Filtering & Normalization  
-**Dataset Reference:** EchoNext v1.0.0  
+**Generated:** {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+**Scope:** Signal Sanity, Quality Evaluation, Configurable Zero-Phase Filtering & Normalization
+**Dataset Reference:** EchoNext v1.0.0
 
 ---
 
@@ -217,12 +212,12 @@ def generate_phase2_report(
 - **Total Inspected ECG Records:** {total_audited:,}
 - **Clinically Usable Records:** {usable_count:,} ({usable_count / max(1, total_audited) * 100:.1f}%)
 - **Flagged / Unusable Records:** {unusable_count:,} ({unusable_count / max(1, total_audited) * 100:.1f}%)
-- **Mean Overall SNR:** {snr_stats.get('mean_overall_snr_db', 0.0):.2f} dB (Min: {snr_stats.get('min_overall_snr_db', 0.0):.2f} dB, Max: {snr_stats.get('max_overall_snr_db', 0.0):.2f} dB)
+- **Mean Overall SNR:** {snr_stats.get("mean_overall_snr_db", 0.0):.2f} dB (Min: {snr_stats.get("min_overall_snr_db", 0.0):.2f} dB, Max: {snr_stats.get("max_overall_snr_db", 0.0):.2f} dB)
 - **Active Preprocessing Mode:**
-  - Filtering Enabled: `{config_applied.get('apply_filter', False)}`
-  - Filter Type: `{config_applied.get('filter_type', 'butterworth')}` ({config_applied.get('lowcut_hz')} - {config_applied.get('highcut_hz')} Hz, Order {config_applied.get('filter_order')})
-  - Notch Filter: `{config_applied.get('apply_notch', False)}`
-  - Normalization Enabled: `{config_applied.get('apply_normalization', False)}` ({config_applied.get('normalization_method', 'none')})
+  - Filtering Enabled: `{config_applied.get("apply_filter", False)}`
+  - Filter Type: `{config_applied.get("filter_type", "butterworth")}` ({config_applied.get("lowcut_hz")} - {config_applied.get("highcut_hz")} Hz, Order {config_applied.get("filter_order")})
+  - Notch Filter: `{config_applied.get("apply_notch", False)}`
+  - Normalization Enabled: `{config_applied.get("apply_normalization", False)}` ({config_applied.get("normalization_method", "none")})
 
 ---
 
@@ -256,11 +251,11 @@ To satisfy strict biomedical signal processing integrity, the pipeline maintains
         mean_snr = snr_stats.get(f"snr_{lead}", 0.0)
         content += f"| `{lead}` | {fl} | {cl} | {ns} | {mean_snr:.2f} |\n"
 
-    content += f"""
+    content += """
 ### Fault Detection Definitions:
-- **Flatline Lead:** Lead variance $< 1.0 \\times 10^{{-5}}$ across recording or $>60\\%$ of $0.5\\text{{ s}}$ windows.
+- **Flatline Lead:** Lead variance $< 1.0 \\times 10^{-5}$ across recording or $>60\\%$ of $0.5\\text{ s}$ windows.
 - **Clipped Lead:** $\\ge 8$ consecutive samples equal to the extremal min or max boundary.
-- **Low SNR Lead:** Cardiac band ($0.5\\text{{--}}40\\text{{ Hz}}$) to high-frequency noise floor ratio $< -3.0\\text{{ dB}}$.
+- **Low SNR Lead:** Cardiac band ($0.5\\text{--}40\\text{ Hz}$) to high-frequency noise floor ratio $< -3.0\\text{ dB}$.
 - **Record Unusable Criteria:** $>2$ faulty leads in a single recording or complete flatline across all leads.
 
 ---
@@ -298,16 +293,21 @@ def main() -> int:
     logger.info("Starting Phase 2 Preprocessing & Quality Audit on: %s", data_dir)
 
     # Ensure dataset exists; create mock if needed
-    if not (data_dir / "EchoNext_metadata_100k.csv").exists() and not (
-        data_dir / "echonext_metadata_100k.csv"
-    ).exists():
-        logger.warning("EchoNext metadata not found at %s. Creating synthetic mock dataset...", data_dir)
+    if (
+        not (data_dir / "EchoNext_metadata_100k.csv").exists()
+        and not (data_dir / "echonext_metadata_100k.csv").exists()
+    ):
+        logger.warning(
+            "EchoNext metadata not found at %s. Creating synthetic mock dataset...", data_dir
+        )
         create_mock_echonext_dataset(data_dir, num_train=70, num_val=15, num_test=15, seed=42)
 
     dataset = EchoNextDataset(data_dir)
     total_records = len(dataset)
     audit_limit = min(args.limit, total_records)
-    logger.info("Dataset loaded with %d records. Auditing %d records...", total_records, audit_limit)
+    logger.info(
+        "Dataset loaded with %d records. Auditing %d records...", total_records, audit_limit
+    )
 
     # Initialize Preprocessor
     preprocessor = ECGSignalPreprocessor(
@@ -327,7 +327,7 @@ def main() -> int:
     unusable_count = 0
     fault_counts = {"flatline": {}, "clipping": {}, "noisy": {}}
     snr_list = []
-    lead_snr_accum = {l: [] for l in STANDARD_12_LEADS}
+    lead_snr_accum = {lead_name: [] for lead_name in STANDARD_12_LEADS}
 
     sample_raw: Optional[np.ndarray] = None
     sample_filt: Optional[np.ndarray] = None
@@ -410,7 +410,9 @@ def main() -> int:
     print("=" * 65)
     print(f"Audited Records:         {audit_limit:,}")
     print(f"Usable Records:          {usable_count:,} ({usable_count / audit_limit * 100:.1f}%)")
-    print(f"Unusable Records:        {unusable_count:,} ({unusable_count / audit_limit * 100:.1f}%)")
+    print(
+        f"Unusable Records:        {unusable_count:,} ({unusable_count / audit_limit * 100:.1f}%)"
+    )
     print(f"Mean Overall SNR:        {snr_stats['mean_overall_snr_db']:.2f} dB")
     print(f"Quality Report:          {report_path}")
     print(f"Summary JSON:            {summary_json_path}")

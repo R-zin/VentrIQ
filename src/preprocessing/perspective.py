@@ -7,15 +7,15 @@ perspective-distorted smartphone photographs back into canonical rectilinear pla
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
+import torch
 from PIL import Image
 from scipy import ndimage
-import torch
 
 from src.rendering.augmentation import solve_homography_coefficients
 
@@ -29,10 +29,10 @@ STANDARD_PAPER_ASPECT_RATIO: float = 280.0 / 190.0
 class DetectedDocument:
     """Detected document boundaries and corner localization metadata."""
 
-    corners: np.ndarray      # Shape (4, 2): [TL, TR, BR, BL] in image pixels
-    confidence: float        # Localization confidence score in [0.0, 1.0]
-    aspect_ratio: float      # Estimated width / height ratio
-    is_fallback: bool        # True if boundary detection failed and fallback was used
+    corners: np.ndarray  # Shape (4, 2): [TL, TR, BR, BL] in image pixels
+    confidence: float  # Localization confidence score in [0.0, 1.0]
+    aspect_ratio: float  # Estimated width / height ratio
+    is_fallback: bool  # True if boundary detection failed and fallback was used
 
     @property
     def top_left(self) -> np.ndarray:
@@ -112,7 +112,9 @@ def _otsu_threshold(gray: np.ndarray) -> float:
         mean_background = sum_background / weight_background
         mean_foreground = (sum_total - sum_background) / weight_foreground
 
-        between_variance = weight_background * weight_foreground * ((mean_background - mean_foreground) ** 2)
+        between_variance = (
+            weight_background * weight_foreground * ((mean_background - mean_foreground) ** 2)
+        )
         if between_variance > current_max:
             current_max = between_variance
             threshold = float(i)
@@ -185,12 +187,15 @@ def detect_document_corners(
     if area_ratio < min_paper_area_ratio or not np.any(paper_mask):
         # Fallback to padded canvas boundaries
         pad_x, pad_y = w * 0.05, h * 0.05
-        fallback_corners = np.array([
-            [pad_x, pad_y],
-            [w - pad_x, pad_y],
-            [w - pad_x, h - pad_y],
-            [pad_x, h - pad_y],
-        ], dtype=np.float32)
+        fallback_corners = np.array(
+            [
+                [pad_x, pad_y],
+                [w - pad_x, pad_y],
+                [w - pad_x, h - pad_y],
+                [pad_x, h - pad_y],
+            ],
+            dtype=np.float32,
+        )
         return DetectedDocument(
             corners=fallback_corners,
             confidence=0.20,
@@ -269,7 +274,10 @@ def rectify_document(
         doc = DetectedDocument(
             corners=corner_arr,
             confidence=0.90,
-            aspect_ratio=float(np.linalg.norm(corner_arr[1] - corner_arr[0]) / max(1.0, np.linalg.norm(corner_arr[3] - corner_arr[0]))),
+            aspect_ratio=float(
+                np.linalg.norm(corner_arr[1] - corner_arr[0])
+                / max(1.0, np.linalg.norm(corner_arr[3] - corner_arr[0]))
+            ),
             is_fallback=False,
         )
         corner_pts = corner_arr
@@ -281,12 +289,15 @@ def rectify_document(
         # Standard 150 DPI resolution: 1654 x 1122
         target_w, target_h = 1654, 1122
 
-    target_corners = np.array([
-        [0.0, 0.0],
-        [float(target_w), 0.0],
-        [float(target_w), float(target_h)],
-        [0.0, float(target_h)],
-    ], dtype=np.float64)
+    target_corners = np.array(
+        [
+            [0.0, 0.0],
+            [float(target_w), 0.0],
+            [float(target_w), float(target_h)],
+            [0.0, float(target_h)],
+        ],
+        dtype=np.float64,
+    )
 
     # 3. Calculate 8 coefficients mapping target rectangle back to source photo coordinates
     coeffs = solve_homography_coefficients(

@@ -7,15 +7,12 @@ and grid visibility from photographed ECG recordings.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Tuple, Union
 
 import numpy as np
-from PIL import Image, ImageOps
+from PIL import Image
 from scipy import ndimage
-import torch
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +102,7 @@ def apply_clahe(
         arr = np.array(image, dtype=np.float32)
 
     # Process in YUV / Luminance space for RGB images to preserve color fidelity
-    is_rgb = (arr.ndim == 3 and arr.shape[2] == 3)
+    is_rgb = arr.ndim == 3 and arr.shape[2] == 3
     if is_rgb:
         # Convert RGB to YCbCr
         r, g, b = arr[..., 0], arr[..., 1], arr[..., 2]

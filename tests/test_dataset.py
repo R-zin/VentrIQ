@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import FrozenInstanceError
-import json
-from pathlib import Path
 import tempfile
-import numpy as np
+from dataclasses import FrozenInstanceError
+from pathlib import Path
+
 import pytest
 import torch
 from torch.utils.data import DataLoader

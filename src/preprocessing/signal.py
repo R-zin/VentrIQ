@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
-from scipy import signal as scipy_signal
 import yaml
+from scipy import signal as scipy_signal
 
 from src.data.echonext import (
-    EXPECTED_TIME_STEPS,
-    NUM_LEADS,
     SAMPLING_RATE_HZ,
-    STANDARD_12_LEADS,
 )
 from src.preprocessing.quality import ECGQualityEvaluator, QualityReport
 
@@ -88,14 +85,22 @@ class ECGSignalPreprocessor:
         norm_cfg = self.config.get("normalization", {})
         sig_cfg = self.config.get("signal", {})
 
-        self.fs = sampling_rate_hz if sampling_rate_hz is not None else sig_cfg.get("sampling_rate_hz", SAMPLING_RATE_HZ)
-        self.apply_filter = apply_filter if apply_filter is not None else filt_cfg.get("apply_filter", False)
+        self.fs = (
+            sampling_rate_hz
+            if sampling_rate_hz is not None
+            else sig_cfg.get("sampling_rate_hz", SAMPLING_RATE_HZ)
+        )
+        self.apply_filter = (
+            apply_filter if apply_filter is not None else filt_cfg.get("apply_filter", False)
+        )
         self.lowcut = lowcut_hz if lowcut_hz is not None else filt_cfg.get("lowcut_hz", 0.5)
         self.highcut = highcut_hz if highcut_hz is not None else filt_cfg.get("highcut_hz", 40.0)
         self.filter_order = filter_order if filter_order is not None else filt_cfg.get("order", 4)
         self.filter_type = filt_cfg.get("filter_type", "butterworth")
 
-        self.apply_notch = apply_notch if apply_notch is not None else filt_cfg.get("apply_notch", False)
+        self.apply_notch = (
+            apply_notch if apply_notch is not None else filt_cfg.get("apply_notch", False)
+        )
         self.notch_freqs = (
             notch_frequencies_hz
             if notch_frequencies_hz is not None
@@ -128,9 +133,7 @@ class ECGSignalPreprocessor:
         low = max(0.001, min(low, 0.99))
         high = max(low + 0.01, min(high, 0.99))
 
-        sos = scipy_signal.butter(
-            self.filter_order, [low, high], btype="bandpass", output="sos"
-        )
+        sos = scipy_signal.butter(self.filter_order, [low, high], btype="bandpass", output="sos")
         return sos
 
     def apply_zero_phase_bandpass(
@@ -205,9 +208,9 @@ class ECGSignalPreprocessor:
 
         elif norm_type == "global_zscore":
             # Dataset-wide or fixed statistics (avoids validation/test leakage)
-            mean = train_mean if train_mean is not None else float(np.mean(arr))
-            std = train_std if train_std is not None else float(np.std(arr))
-            return ((arr - mean) / (std + self.epsilon)).astype(np.float32)
+            g_mean = train_mean if train_mean is not None else float(np.mean(arr))
+            g_std = train_std if train_std is not None else float(np.std(arr))
+            return ((arr - g_mean) / (g_std + self.epsilon)).astype(np.float32)
 
         elif norm_type == "minmax":
             # Scale to [-1, 1] per lead

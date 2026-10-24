@@ -15,11 +15,9 @@ Executes the complete end-to-end VentriQ simulation and vision pipeline:
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
-import json
-import logging
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
@@ -40,7 +38,7 @@ from src.rendering.augmentation import DistortionConfig, SmartphoneECGSimulator
 from src.rendering.layout import ECGLayoutConfig
 from src.rendering.renderer import ECGPaperRenderer
 from src.utils.logging import get_logger
-from src.utils.paths import FIGURES_DIR, REPORTS_DIR, get_raw_echonext_dir
+from src.utils.paths import REPORTS_DIR, get_raw_echonext_dir
 
 logger = get_logger("validate_pipeline")
 
@@ -89,7 +87,7 @@ def compute_ssim(image_true: np.ndarray, image_test: np.ndarray) -> float:
     sigma12 = np.mean((y1 - mu1) * (y2 - mu2))
 
     numerator = (2.0 * mu1 * mu2 + c1) * (2.0 * sigma12 + c2)
-    denominator = (mu1 ** 2 + mu2 ** 2 + c1) * (sigma1_sq + sigma2_sq + c2)
+    denominator = (mu1**2 + mu2**2 + c1) * (sigma1_sq + sigma2_sq + c2)
     return float(np.clip(numerator / (denominator + 1e-8), -1.0, 1.0))
 
 
@@ -144,19 +142,27 @@ def plot_pipeline_stages(
     fig, axes = plt.subplots(1, 5, figsize=(20, 5), dpi=130)
 
     axes[0].imshow(canonical_img)
-    axes[0].set_title("1. Canonical ECG Paper\n(Phase 4 Ground Truth)", fontsize=9, fontweight="bold")
+    axes[0].set_title(
+        "1. Canonical ECG Paper\n(Phase 4 Ground Truth)", fontsize=9, fontweight="bold"
+    )
     axes[0].axis("off")
 
     axes[1].imshow(photo_img)
-    axes[1].set_title("2. Smartphone Photo\n(3D Tilt, Shadows, Glare)", fontsize=9, fontweight="bold")
+    axes[1].set_title(
+        "2. Smartphone Photo\n(3D Tilt, Shadows, Glare)", fontsize=9, fontweight="bold"
+    )
     axes[1].axis("off")
 
     axes[2].imshow(rectified_img)
-    axes[2].set_title("3. Perspective Rectified\n(4-Point Homography)", fontsize=9, fontweight="bold")
+    axes[2].set_title(
+        "3. Perspective Rectified\n(4-Point Homography)", fontsize=9, fontweight="bold"
+    )
     axes[2].axis("off")
 
     axes[3].imshow(enhanced_img)
-    axes[3].set_title("4. Illumination Corrected\n(Division + CLAHE)", fontsize=9, fontweight="bold")
+    axes[3].set_title(
+        "4. Illumination Corrected\n(Division + CLAHE)", fontsize=9, fontweight="bold"
+    )
     axes[3].axis("off")
 
     # Invert ImageNet normalization for visualization
@@ -230,38 +236,41 @@ def generate_phase5_markdown_report(
     ]
 
     if fig_rel_path:
-        lines.extend([
-            f"![Vision Pipeline Stages]({fig_rel_path})",
-            "",
-            "> *Figure 1: Complete end-to-end processing progression from ground-truth clinical paper recording through simulated smartphone camera capture, automated document localization, four-point homography unwarping, shadow division normalization, and standardized MobileNetV3 tensor generation.*",
-            "",
-        ])
+        lines.extend(
+            [
+                f"![Vision Pipeline Stages]({fig_rel_path})",
+                "",
+                "> *Figure 1: Complete end-to-end processing progression from ground-truth clinical paper recording through simulated smartphone camera capture, automated document localization, four-point homography unwarping, shadow division normalization, and standardized MobileNetV3 tensor generation.*",
+                "",
+            ]
+        )
 
-    lines.extend([
-        "---",
-        "",
-        "## 3. Quantitative Evaluation per Sample",
-        "",
-        _dataframe_to_markdown(df),
-        "",
-        "---",
-        "",
-        "## 4. Verification Checklist",
-        "",
-        "- [x] 3D camera pose and perspective homography simulation verified with ground-truth corner tracking.",
-        "- [x] Cast shadow masks and illumination gradients realistically simulated.",
-        "- [x] Document boundary detection extracts corner coordinates accurately.",
-        "- [x] Four-point perspective unwarping restores canonical $280\\text{ mm} \\times 190\\text{ mm}$ rectangular canvas.",
-        "- [x] Background division normalization and CLAHE enhance trace contrast in shadow zones.",
-        "- [x] Output tensors match MobileNetV3 shape $(3, 224, 224)$ with ImageNet standardization.",
-        "- [x] PyTorch DataLoader compatibility verified for edge vision training and inference.",
-        "",
-    ])
+    lines.extend(
+        [
+            "---",
+            "",
+            "## 3. Quantitative Evaluation per Sample",
+            "",
+            _dataframe_to_markdown(df),
+            "",
+            "---",
+            "",
+            "## 4. Verification Checklist",
+            "",
+            "- [x] 3D camera pose and perspective homography simulation verified with ground-truth corner tracking.",
+            "- [x] Cast shadow masks and illumination gradients realistically simulated.",
+            "- [x] Document boundary detection extracts corner coordinates accurately.",
+            "- [x] Four-point perspective unwarping restores canonical $280\\text{ mm} \\times 190\\text{ mm}$ rectangular canvas.",
+            "- [x] Background division normalization and CLAHE enhance trace contrast in shadow zones.",
+            "- [x] Output tensors match MobileNetV3 shape $(3, 224, 224)$ with ImageNet standardization.",
+            "- [x] PyTorch DataLoader compatibility verified for edge vision training and inference.",
+            "",
+        ]
+    )
 
     report_text = "\n".join(lines)
     output_path.write_text(report_text, encoding="utf-8")
     return output_path
-
 
 
 def main() -> int:
@@ -280,12 +289,16 @@ def main() -> int:
     enhancer = ECGImageEnhancer()
 
     eval_results: List[Dict[str, Any]] = []
-    first_stages: Optional[Tuple[Image.Image, Image.Image, Image.Image, Image.Image, np.ndarray]] = None
+    first_stages: Optional[
+        Tuple[Image.Image, Image.Image, Image.Image, Image.Image, np.ndarray]
+    ] = None
 
     for i in range(num_to_eval):
         sample = dataset[i]
         rec_id = sample["record_id"]
-        lvef_val = sample["lvef"].item() if hasattr(sample["lvef"], "item") else float(sample["lvef"])
+        lvef_val = (
+            sample["lvef"].item() if hasattr(sample["lvef"], "item") else float(sample["lvef"])
+        )
 
         # Stage 1: Render Canonical Paper ECG
         ecg_img = renderer.render(sample["waveform"], record=sample)
@@ -301,7 +314,9 @@ def main() -> int:
         # Measure corner localization Euclidean error vs simulator's ground truth
         gt_corners = sim_photo.corners_transformed
         det_corners = doc.corners
-        corner_err = float(np.mean([np.linalg.norm(g - d) for g, d in zip(gt_corners, det_corners)]))
+        corner_err = float(
+            np.mean([np.linalg.norm(g - d) for g, d in zip(gt_corners, det_corners)])
+        )
 
         # Stage 4: Rectify Document
         rectified = rectify_document(photo_pil, corners=doc, target_size=canonical_pil.size)
@@ -319,16 +334,18 @@ def main() -> int:
         psnr_val = compute_psnr(arr_canonical, arr_rectified)
         ssim_val = compute_ssim(arr_canonical, arr_rectified)
 
-        eval_results.append({
-            "record_id": rec_id,
-            "patient_key": sample["patient_key"],
-            "split": sample["split"],
-            "lvef_value": round(lvef_val, 1) if not np.isnan(lvef_val) else None,
-            "corner_error_px": round(corner_err, 2),
-            "psnr_db": round(psnr_val, 2),
-            "ssim": round(ssim_val, 4),
-            "is_fallback": doc.is_fallback,
-        })
+        eval_results.append(
+            {
+                "record_id": rec_id,
+                "patient_key": sample["patient_key"],
+                "split": sample["split"],
+                "lvef_value": round(lvef_val, 1) if not np.isnan(lvef_val) else None,
+                "corner_error_px": round(corner_err, 2),
+                "psnr_db": round(psnr_val, 2),
+                "ssim": round(ssim_val, 4),
+                "is_fallback": doc.is_fallback,
+            }
+        )
 
         if first_stages is None:
             first_stages = (

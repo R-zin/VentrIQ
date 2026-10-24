@@ -14,16 +14,16 @@ from src.rendering.augmentation import (
     load_augmentation_config,
 )
 from src.rendering.layout import (
-    CalibrationPulseConfig,
-    ECGLayout,
-    ECGLayoutConfig,
-    GridConfig,
-    LeadSegment,
     DEFAULT_MAJOR_GRID_MM,
     DEFAULT_MINOR_GRID_MM,
     DEFAULT_PAPER_SPEED_MM_PER_SEC,
     DEFAULT_VOLTAGE_GAIN_MM_PER_MV,
     LEAD_NAME_TO_INDEX,
+    CalibrationPulseConfig,
+    ECGLayout,
+    ECGLayoutConfig,
+    GridConfig,
+    LeadSegment,
     load_rendering_config,
 )
 from src.rendering.renderer import (

@@ -24,6 +24,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Optional,
     Sequence,
     Tuple,
@@ -274,7 +275,7 @@ class DatasetManifest:
             quality_flags: Optional[Dict[str, Any]] = None
             if quality_evaluator is not None:
                 try:
-                    wf = dataset.get_waveform(idx)
+                    wf = dataset.get_waveform(int(str(idx)))
                     qc_report = quality_evaluator.evaluate(wf)
                     quality_flags = qc_report.to_dict()
                 except Exception as exc:
@@ -315,9 +316,9 @@ class DatasetManifest:
             patient_counts[sp] = len(pats)
 
         # 4. Target distribution statistics
-        valid_lvefs = [r.lvef_target for r in retained_records if r.has_valid_lvef]
-        lvef_lte_45_flags = [r.lvef_lte_45_label for r in retained_records if r.lvef_lte_45_label is not None]
-        shd_flags = [r.shd_label for r in retained_records if r.shd_label is not None]
+        valid_lvefs = [float(r.lvef_target) for r in retained_records if r.lvef_target is not None]
+        lvef_lte_45_flags = [float(r.lvef_lte_45_label) for r in retained_records if r.lvef_lte_45_label is not None]
+        shd_flags = [float(r.shd_label) for r in retained_records if r.shd_label is not None]
 
         target_stats: Dict[str, Any] = {
             "lvef_count": len(valid_lvefs),
@@ -380,7 +381,7 @@ class VentriQTorchDataset(Dataset):
         channels_first: bool = True,
         exclude_missing_lvef: bool = False,
         require_usable_quality: bool = False,
-        mmap_mode: str = "r",
+        mmap_mode: Optional[Literal["r+", "r", "w+", "c"]] = "r",
     ) -> None:
         """Initialize VentriQTorchDataset.
 
@@ -453,8 +454,9 @@ class VentriQTorchDataset(Dataset):
 
     def _get_waveform_mmap(self, split: str) -> np.ndarray:
         """Retrieve memory-mapped array for the given split (process/worker-safe lazy loading)."""
-        if split in self._waveform_mmaps and self._waveform_mmaps[split] is not None:
-            return self._waveform_mmaps[split]
+        cached = self._waveform_mmaps.get(split)
+        if cached is not None:
+            return cached
 
         path = self._locate_mmap_file(split)
         if path is None:

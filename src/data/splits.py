@@ -427,10 +427,12 @@ def create_patient_kfold_splits(
         List of (train_indices, val_indices) tuples.
     """
     if stratify_col is not None and isinstance(data, pd.DataFrame):
-        splitter = StratifiedPatientKFold(n_splits=n_splits, shuffle=shuffle, random_state=seed)
+        strat_splitter = StratifiedPatientKFold(
+            n_splits=n_splits, shuffle=shuffle, random_state=seed
+        )
         y = data[stratify_col].tolist()
         groups = data[patient_col].tolist()
-        return list(splitter.split(data, y=y, groups=groups))
+        return list(strat_splitter.split(data, y=y, groups=groups))
 
-    splitter = PatientGroupKFold(n_splits=n_splits, shuffle=shuffle, random_state=seed)
-    return list(splitter.split(data))
+    group_splitter = PatientGroupKFold(n_splits=n_splits, shuffle=shuffle, random_state=seed)
+    return list(group_splitter.split(data))

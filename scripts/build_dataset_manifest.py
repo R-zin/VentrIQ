@@ -13,19 +13,16 @@ This script executes the Phase 3 reproducibility pipeline:
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
-import json
-import logging
-from pathlib import Path
 import sys
-from typing import Any, Dict
+from datetime import datetime
+from pathlib import Path
 
 # Ensure project root is in sys.path
 PROJECT_ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT_DIR))
 
-from src.data.dataset import DatasetManifest, VentriQTorchDataset
+from src.data.dataset import DatasetManifest
 from src.data.splits import verify_patient_isolation
 from src.preprocessing.quality import ECGQualityEvaluator
 from src.utils.logging import get_logger
@@ -104,55 +101,78 @@ def generate_phase3_markdown_report(
     for fname, sha in sorted(manifest.source_checksums.items()):
         lines.append(f"| `{fname}` | `{sha}` |")
 
-    lines.extend([
-        "",
-        "## 2. Partition & Patient Isolation Audit",
-        "",
-        "```text",
-        leakage_summary,
-        "```",
-        "",
-        "| Partition | Retained Records | Unique Patients | Excluded Records |",
-        "|---|---|---|---|",
-    ])
+    lines.extend(
+        [
+            "",
+            "## 2. Partition & Patient Isolation Audit",
+            "",
+            "```text",
+            leakage_summary,
+            "```",
+            "",
+            "| Partition | Retained Records | Unique Patients | Excluded Records |",
+            "|---|---|---|---|",
+        ]
+    )
 
-    all_splits = sorted(set(list(manifest.retained_counts_per_split.keys()) + list(manifest.excluded_counts_per_split.keys())))
+    all_splits = sorted(
+        set(
+            list(manifest.retained_counts_per_split.keys())
+            + list(manifest.excluded_counts_per_split.keys())
+        )
+    )
     for sp in all_splits:
         retained = manifest.retained_counts_per_split.get(sp, 0)
         pats = manifest.patient_counts_per_split.get(sp, 0)
         excluded = manifest.excluded_counts_per_split.get(sp, 0)
         lines.append(f"| **{sp}** | {retained:,} | {pats:,} | {excluded:,} |")
 
-    lines.extend([
-        "",
-        "### Exclusion Breakdown:",
-    ])
+    lines.extend(
+        [
+            "",
+            "### Exclusion Breakdown:",
+        ]
+    )
     for reason, count in manifest.exclusion_breakdown.items():
         lines.append(f"- **{reason}**: {count:,} records")
 
-    lines.extend([
-        "",
-        "## 3. Clinical Diagnostic Targets Distribution",
-        "",
-        "| Target Metric | Retained Value |",
-        "|---|---|",
-        f"| Valid LVEF Records | {t_stats.get('lvef_count', 0):,} |",
-        f"| Mean LVEF | {t_stats.get('lvef_mean', 0.0):.2f}% |" if t_stats.get('lvef_mean') is not None else "| Mean LVEF | N/A |",
-        f"| Std LVEF | {t_stats.get('lvef_std', 0.0):.2f}% |" if t_stats.get('lvef_std') is not None else "| Std LVEF | N/A |",
-        f"| Median LVEF | {t_stats.get('lvef_median', 0.0):.2f}% |" if t_stats.get('lvef_median') is not None else "| Median LVEF | N/A |",
-        f"| Min / Max LVEF | {t_stats.get('lvef_min', 0.0):.1f}% / {t_stats.get('lvef_max', 0.0):.1f}% |" if t_stats.get('lvef_min') is not None else "| Min / Max LVEF | N/A |",
-        f"| Moderate-to-Severe Dysfunction (LVEF ≤ 45%) Prevalence | {t_stats.get('lvef_lte_45_rate', 0.0) * 100:.1f}% |" if t_stats.get('lvef_lte_45_rate') is not None else "| LVEF ≤ 45% Rate | N/A |",
-        f"| Moderate+ Structural Heart Disease (SHD) Prevalence | {t_stats.get('shd_rate', 0.0) * 100:.1f}% |" if t_stats.get('shd_rate') is not None else "| SHD Rate | N/A |",
-        "",
-        "## 4. PyTorch Dataset Integration & Zero-Copy Slicing",
-        "",
-        "- Waveforms are retrieved directly via memory-mapping without duplicating NumPy binaries.",
-        "- Multi-worker safe through process-local memory mapping and deterministic `ventriq_worker_init_fn`.",
-        "- Standard tensor outputs: `(12, 2500)` float32 ready for MobileNetV3 and 1D-CNN backbones.",
-        "",
-        "---",
-        "**Report Status:** Verified & Audit-Logged.",
-    ])
+    lines.extend(
+        [
+            "",
+            "## 3. Clinical Diagnostic Targets Distribution",
+            "",
+            "| Target Metric | Retained Value |",
+            "|---|---|",
+            f"| Valid LVEF Records | {t_stats.get('lvef_count', 0):,} |",
+            f"| Mean LVEF | {t_stats.get('lvef_mean', 0.0):.2f}% |"
+            if t_stats.get("lvef_mean") is not None
+            else "| Mean LVEF | N/A |",
+            f"| Std LVEF | {t_stats.get('lvef_std', 0.0):.2f}% |"
+            if t_stats.get("lvef_std") is not None
+            else "| Std LVEF | N/A |",
+            f"| Median LVEF | {t_stats.get('lvef_median', 0.0):.2f}% |"
+            if t_stats.get("lvef_median") is not None
+            else "| Median LVEF | N/A |",
+            f"| Min / Max LVEF | {t_stats.get('lvef_min', 0.0):.1f}% / {t_stats.get('lvef_max', 0.0):.1f}% |"
+            if t_stats.get("lvef_min") is not None
+            else "| Min / Max LVEF | N/A |",
+            f"| Moderate-to-Severe Dysfunction (LVEF ≤ 45%) Prevalence | {t_stats.get('lvef_lte_45_rate', 0.0) * 100:.1f}% |"
+            if t_stats.get("lvef_lte_45_rate") is not None
+            else "| LVEF ≤ 45% Rate | N/A |",
+            f"| Moderate+ Structural Heart Disease (SHD) Prevalence | {t_stats.get('shd_rate', 0.0) * 100:.1f}% |"
+            if t_stats.get("shd_rate") is not None
+            else "| SHD Rate | N/A |",
+            "",
+            "## 4. PyTorch Dataset Integration & Zero-Copy Slicing",
+            "",
+            "- Waveforms are retrieved directly via memory-mapping without duplicating NumPy binaries.",
+            "- Multi-worker safe through process-local memory mapping and deterministic `ventriq_worker_init_fn`.",
+            "- Standard tensor outputs: `(12, 2500)` float32 ready for MobileNetV3 and 1D-CNN backbones.",
+            "",
+            "---",
+            "**Report Status:** Verified & Audit-Logged.",
+        ]
+    )
 
     with open(output_path, "w") as f:
         f.write("\n".join(lines) + "\n")
@@ -202,7 +222,9 @@ def main() -> int:
     for sp, cnt in manifest.retained_counts_per_split.items():
         pats = manifest.patient_counts_per_split.get(sp, 0)
         print(f"  - Split '{sp}':        {cnt:,} records, {pats:,} patients")
-    print(f"Patient Isolation:       {'PASS (Zero Leakage)' if leakage_report.is_valid else 'FAIL (Leakage Detected)'}")
+    print(
+        f"Patient Isolation:       {'PASS (Zero Leakage)' if leakage_report.is_valid else 'FAIL (Leakage Detected)'}"
+    )
     print(f"Manifest JSON:           {manifest_path}")
     print(f"Markdown Report:         {report_path}")
     print("=" * 65 + "\n")

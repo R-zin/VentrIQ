@@ -3,8 +3,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from src.data.echonext import EXPECTED_TIME_STEPS, NUM_LEADS, STANDARD_12_LEADS
-from src.preprocessing.quality import ECGQualityEvaluator, QualityReport
+from src.data.echonext import EXPECTED_TIME_STEPS, NUM_LEADS
+from src.preprocessing.quality import ECGQualityEvaluator
 
 
 @pytest.fixture

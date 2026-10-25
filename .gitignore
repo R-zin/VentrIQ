@@ -10,6 +10,8 @@ __pycache__/
 *.so
 .pytest_cache/
 .coverage
+coverage.xml
+*.xml
 htmlcov/
 
 # IDE and Editor files
@@ -28,3 +30,9 @@ data/synthetic/
 
 # Reports generated figures (tracked for PR review)
 # reports/figures/*.png
+
+# Agent and tooling configs
+.agents/
+.claude/
+skills-lock.json
+

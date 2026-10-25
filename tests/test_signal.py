@@ -83,7 +83,9 @@ def test_preprocessor_with_notch(synthetic_ecg):
 def test_normalization_methods(synthetic_ecg):
     """Test lead_zscore, minmax, and robust normalization modes."""
     # Test lead_zscore
-    prep_zscore = ECGSignalPreprocessor(apply_normalization=True, normalization_method="lead_zscore")
+    prep_zscore = ECGSignalPreprocessor(
+        apply_normalization=True, normalization_method="lead_zscore"
+    )
     res_z = prep_zscore.process(synthetic_ecg)
     assert res_z.normalized is not None
     # Each lead should have approximately mean 0 and std 1

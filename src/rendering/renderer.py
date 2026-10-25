@@ -8,46 +8,47 @@ and clinical lead typography.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
 import io
 import logging
+from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
 import torch
+from PIL import Image, ImageDraw, ImageFont
 
 from src.data.dataset import ECGRecord
 from src.data.echonext import (
-    EXPECTED_TIME_STEPS,
     NUM_LEADS,
-    RECORDING_DURATION_SEC,
-    SAMPLING_RATE_HZ,
-    STANDARD_12_LEADS,
 )
 from src.rendering.layout import (
-    CalibrationPulseConfig,
     ECGLayout,
     ECGLayoutConfig,
-    GridConfig,
-    LeadSegment,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def _resolve_system_font(size_pt: int, bold: bool = True) -> ImageFont.ImageFont:
+def _resolve_system_font(size_pt: int, bold: bool = True) -> Any:
     """Attempt to load a clean sans-serif system font, falling back to PIL default font."""
     font_candidates = [
         # Linux / Ubuntu standard fonts (CI runner)
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf" if bold else "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf" if bold else "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+        if bold
+        else "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"
+        if bold
+        else "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf"
+        if bold
+        else "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
         # macOS standard fonts
         "/System/Library/Fonts/Helvetica.ttc",
-        "/System/Library/Fonts/Supplemental/Arial Bold.ttf" if bold else "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf"
+        if bold
+        else "/System/Library/Fonts/Supplemental/Arial.ttf",
         "/Library/Fonts/Arial.ttf",
         "DejaVuSans.ttf",
         "Arial.ttf",
@@ -231,9 +232,7 @@ class ECGPaperRenderer:
         if arr.shape[0] == NUM_LEADS and arr.shape[1] != NUM_LEADS:
             arr = arr.T
         elif arr.shape[1] != NUM_LEADS:
-            raise ValueError(
-                f"Waveform has invalid lead dimension {arr.shape}. Expected 12 leads."
-            )
+            raise ValueError(f"Waveform has invalid lead dimension {arr.shape}. Expected 12 leads.")
 
         # Numerical safety: replace any NaNs or Infs with 0.0
         if not np.isfinite(arr).all():
@@ -269,8 +268,12 @@ class ECGPaperRenderer:
         draw = ImageDraw.Draw(base_img)
 
         # Prepare fonts
-        font_main = _resolve_system_font(int(round(self.config.label_font_size_pt * scale)), bold=True)
-        font_sub = _resolve_system_font(int(round((self.config.label_font_size_pt - 1) * scale)), bold=False)
+        font_main = _resolve_system_font(
+            int(round(self.config.label_font_size_pt * scale)), bold=True
+        )
+        font_sub = _resolve_system_font(
+            int(round((self.config.label_font_size_pt - 1) * scale)), bold=False
+        )
 
         # Step 2: Draw Calibration Pulses
         cal = self.config.calibration
@@ -299,7 +302,9 @@ class ECGPaperRenderer:
             if self.config.show_lead_labels:
                 lbl_x = seg.label_x_mm * self.layout.px_per_mm * scale
                 lbl_y = seg.label_y_mm * self.layout.px_per_mm * scale
-                draw.text((lbl_x, lbl_y), seg.label_text, fill=self.config.label_color, font=font_main)
+                draw.text(
+                    (lbl_x, lbl_y), seg.label_text, fill=self.config.label_color, font=font_main
+                )
 
             # 3.2: Extract waveform slice
             start_sample = int(round(seg.start_time_sec * fs))
@@ -351,12 +356,15 @@ class ECGPaperRenderer:
                         raw_lvef = raw_lvef.item()
                     lvef_val = float(raw_lvef)
 
-                raw_flag = record.get("lvef_lte_45") if "lvef_lte_45" in record else record.get("lvef_lte_45_flag")
+                raw_flag = (
+                    record.get("lvef_lte_45")
+                    if "lvef_lte_45" in record
+                    else record.get("lvef_lte_45_flag")
+                )
                 if raw_flag is not None:
                     if hasattr(raw_flag, "item"):
                         raw_flag = raw_flag.item()
                     lvef_flag = int(raw_flag) if raw_flag >= 0 else None
-
 
         if self.config.show_header:
             left_header = header_text or self.config.header_text
@@ -375,7 +383,13 @@ class ECGPaperRenderer:
             right_header = "12-Lead Standard (3x4 + II Rhythm)  |  250 Hz"
             hdr_y = int(round(3.0 * self.layout.px_per_mm * scale))
             hdr_x_left = int(round(self.config.margin_left_mm * self.layout.px_per_mm * scale))
-            hdr_x_right = int(round((self.config.paper_width_mm - self.config.margin_right_mm - 60.0) * self.layout.px_per_mm * scale))
+            hdr_x_right = int(
+                round(
+                    (self.config.paper_width_mm - self.config.margin_right_mm - 60.0)
+                    * self.layout.px_per_mm
+                    * scale
+                )
+            )
 
             draw.text((hdr_x_left, hdr_y), left_header, fill="#374151", font=font_main)
             draw.text((hdr_x_right, hdr_y), right_header, fill="#4b5563", font=font_sub)
@@ -387,7 +401,13 @@ class ECGPaperRenderer:
                 gain = int(self.config.voltage_gain_mm_mv)
                 ftr = f"{speed} mm/s    {gain} mm/mV    0.5 - 40 Hz    Standard 12-Lead Calibration: 1.0 mV (10 mm) / 0.20 s (5 mm)"
 
-            ftr_y = int(round((self.config.paper_height_mm - self.config.margin_bottom_mm + 3.0) * self.layout.px_per_mm * scale))
+            ftr_y = int(
+                round(
+                    (self.config.paper_height_mm - self.config.margin_bottom_mm + 3.0)
+                    * self.layout.px_per_mm
+                    * scale
+                )
+            )
             ftr_x = int(round(self.config.margin_left_mm * self.layout.px_per_mm * scale))
             draw.text((ftr_x, ftr_y), ftr, fill="#4b5563", font=font_sub)
 
@@ -403,7 +423,9 @@ class ECGPaperRenderer:
             "record_id": rec_id,
             "patient_key": pat_key,
             "split": split,
-            "lvef_value": float(lvef_val) if lvef_val is not None and not np.isnan(lvef_val) else None,
+            "lvef_value": float(lvef_val)
+            if lvef_val is not None and not np.isnan(lvef_val)
+            else None,
             "lvef_lte_45_flag": int(lvef_flag) if lvef_flag is not None else None,
             "image_width": final_w,
             "image_height": final_h,

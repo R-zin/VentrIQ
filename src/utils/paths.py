@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 # Project root: resolves to the repository root directory
@@ -55,4 +54,3 @@ def get_synthetic_dir() -> Path:
     """Return the synthetic data directory, creating it if needed."""
     SYNTHETIC_DATA_DIR.mkdir(parents=True, exist_ok=True)
     return SYNTHETIC_DATA_DIR
-

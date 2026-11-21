@@ -101,6 +101,20 @@ The project targets deployment with lightweight computer vision models (such as 
   - Evaluates Peak Signal-to-Noise Ratio (PSNR) and Structural Similarity Index (SSIM).
   - Generates multi-stage comparative figure and [`reports/phase5_vision_report.md`](reports/phase5_vision_report.md).
 
+### Phase 6 — EchoNext Waveform-to-Image Dataset & MobileNetV3 SHD Classifier (`src/vision/`)
+Turns EchoNext's NumPy waveforms into a labelled image dataset, trains a MobileNetV3 on it, and scores ECG images supplied by a user (smartphone photos or scans of a standard 3x4 + rhythm-strip printout) for structural heart disease (`shd_moderate_or_greater_flag`).
+- **Batch conversion (`src/vision/conversion.py`, `scripts/convert_echonext_to_images.py`):**
+  - Slices each record from the per-split memory-mapped `.npy` arrays and renders it with the Phase 4 paper renderer.
+  - **Render-style randomization per image:** grid preset (pink / red / gray / green / no grid), trace thickness, and amplitude scale (mm per z-score unit, since EchoNext amplitudes are standardized rather than millivolts). This keeps the model from overfitting to a single printout style.
+  - **Smartphone capture mix:** a configurable share of images go through the Phase 5 photo simulator (tilt, curl, shadows, glare, blur, noise, JPEG) and are then auto-rectified, so the CNN trains on the same kind of rectified photos users will submit. Default mix: `none=0.5, mild=0.3, moderate=0.2`.
+  - **No shortcut text and no PHI:** the header shows only a neutral title; record and patient IDs are never drawn on the image.
+  - **Reproducible & resumable:** every random choice is derived from `(seed, record_id, variant)`, so output is identical for any worker count. Re-runs skip existing images, and files are written atomically.
+  - **Official splits preserved:** the `{split}/{record_id}_v{k}.jpg` layout plus `image_manifest.csv` (patient key, split, `shd_flag`, `lvef_value`, `lvef_lte_45_flag`, sampled style) mean no patient appears in more than one split. `conversion_config.json` records the settings.
+  - Optional `--variants-per-record N` for offline augmentation, `--max-per-split` for quick experiments, and `--manifest-path` to reuse a Phase 3 QC-filtered manifest.
+- **Shared canonical view (`src/vision/canonical.py`):** `ECGImageCanonicalizer` (paper detection, 4-point rectification, resize to the 280:190 canvas, illumination normalization + CLAHE) is applied identically at conversion time and to every user image at inference. Its settings are stored in the model checkpoint.
+- **Training (`src/vision/dataset.py`, `model.py`, `training.py`, `scripts/train_shd_classifier.py`):** `ECGImageDataset` reads the manifest and applies light online augmentation (small affine, color jitter, grayscale, blur) with ImageNet normalization. `build_mobilenet_v3` builds torchvision MobileNetV3 `small`/`large` (optionally ImageNet-pretrained) with a 1-logit head. Training uses AdamW + OneCycle, `BCEWithLogitsLoss` with class-balanced `pos_weight`, model selection on validation AUROC, early stopping, a Youden-optimal decision threshold, and a single final test evaluation (AUROC, AUPRC, sensitivity, specificity, PPV, NPV).
+- **Inference (`src/vision/inference.py`, `scripts/predict_shd.py`):** `SHDPredictor.from_checkpoint(...)` scores image paths, PIL images or arrays. `--save-canonical` writes the exact view the model saw, for auditing. *Research use only — not a diagnostic device.*
+
 ---
 
 ## Repository Structure
@@ -145,7 +159,10 @@ VentriQ/
 │   ├── preprocess_ecg.py              # Phase 2 signal preprocessing & QC CLI
 │   ├── build_dataset_manifest.py      # Phase 3 dataset manifest & reproducibility CLI
 │   ├── generate_ecg_images.py         # Phase 4 waveform-to-image paper renderer CLI
-│   └── validate_pipeline.py           # Phase 5 end-to-end vision pipeline CLI
+│   ├── validate_pipeline.py           # Phase 5 end-to-end vision pipeline CLI
+│   ├── convert_echonext_to_images.py  # Phase 6 waveform-to-image training dataset CLI
+│   ├── train_shd_classifier.py        # Phase 6 MobileNetV3 SHD training CLI
+│   └── predict_shd.py                 # Phase 6 SHD prediction on user ECG images
 ├── src/
 │   ├── data/
 │   │   ├── dataset.py                 # Phase 3 ECGRecord, DatasetManifest, VentriQTorchDataset
@@ -162,6 +179,13 @@ VentriQ/
 │   │   ├── augmentation.py            # Phase 5 smartphone 3D pose, shadows, glare & noise
 │   │   ├── layout.py                  # Phase 4 physical paper geometry, 3x4 layout & grid
 │   │   └── renderer.py                # Phase 4 ECGPaperRenderer, ECGImage & PyTorch transform
+│   ├── vision/
+│   │   ├── canonical.py               # Phase 6 shared train/inference canonical image view
+│   │   ├── conversion.py              # Phase 6 EchoNext .npy -> labelled ECG image dataset
+│   │   ├── dataset.py                 # Phase 6 ECGImageDataset & image transforms
+│   │   ├── model.py                   # Phase 6 MobileNetV3 binary classifier
+│   │   ├── training.py                # Phase 6 training loop & AUROC/AUPRC metrics
+│   │   └── inference.py               # Phase 6 SHDPredictor for user ECG images
 │   └── utils/
 │       ├── logging.py                 # Standardized logger
 │       └── paths.py                   # Project path resolution utilities
@@ -174,7 +198,8 @@ VentriQ/
 │   ├── test_quality.py                # Phase 2 quality evaluator tests (8 tests)
 │   ├── test_renderer.py               # Phase 4 ECG paper renderer tests (15 tests)
 │   ├── test_signal.py                 # Phase 2 signal preprocessor tests (8 tests)
-│   └── test_splits.py                 # Phase 3 patient isolation & K-Fold tests (7 tests)
+│   ├── test_splits.py                 # Phase 3 patient isolation & K-Fold tests (7 tests)
+│   └── test_vision.py                 # Phase 6 conversion, training & inference tests (22 tests)
 ├── pyproject.toml                     # Project metadata and dependencies
 └── uv.lock                            # Deterministic lockfile
 ```
@@ -198,7 +223,7 @@ uv sync
 
 ### 2. Running Quality Gates & Tests
 
-Execute the comprehensive test suite (94 unit, stress, and robustness tests with coverage enforcement):
+Execute the comprehensive test suite (116 unit, stress, and robustness tests with coverage enforcement):
 
 ```bash
 # Run pytest with full coverage report and XML export
@@ -239,7 +264,31 @@ Run the Phase 5 smartphone vision simulation & rectification CLI:
 uv run python scripts/validate_pipeline.py --report-dir reports/ --num-samples 5
 ```
 
-### 4. Interactive Jupyter Notebooks
+### 4. Training an SHD Classifier on ECG Images (Phase 6)
+
+Convert EchoNext waveforms into a labelled image dataset (~170 KB per image at the default 800x543 JPEG; use `--num-workers` to parallelize, and re-run to resume):
+```bash
+uv run python scripts/convert_echonext_to_images.py --data-dir data/raw/echonext --output-dir data/images/shd --num-workers 8
+```
+
+Train MobileNetV3 (ImageNet-pretrained weights are downloaded by torchvision):
+```bash
+uv run python scripts/train_shd_classifier.py --image-dir data/images/shd --output-dir models/shd_mobilenetv3 --arch large --pretrained --epochs 20 --num-workers 8
+```
+
+Predict SHD from a user's ECG photo or scan:
+```bash
+uv run python scripts/predict_shd.py my_ecg_photo.jpg --checkpoint models/shd_mobilenetv3/best.pt --save-canonical outputs/
+```
+
+Or from Python:
+```python
+from src.vision import SHDPredictor
+predictor = SHDPredictor.from_checkpoint("models/shd_mobilenetv3/best.pt")
+print(predictor.predict("my_ecg_photo.jpg")[0].to_dict())
+```
+
+### 5. Interactive Jupyter Notebooks
 
 - Phase 1 Exploration:
   ```bash
@@ -273,5 +322,5 @@ uv run python scripts/validate_pipeline.py --report-dir reports/ --num-samples 5
 - **Phase 5 Smartphone Vision Report:** [`reports/phase5_vision_report.md`](reports/phase5_vision_report.md)
 - **Canonical Dataset Manifest:** [`reports/dataset_manifest.json`](reports/dataset_manifest.json)
 - **Synthetic Image Manifest:** [`data/synthetic/image_manifest.csv`](data/synthetic/image_manifest.csv)
-- **Unit & Stress Tests:** 94 passing tests (100% pass rate, 90.12% code coverage) covering dataset loading, memory-mapping, patient isolation, zero-phase filtering, fault detection, PyTorch zero-copy dataset slicing, multi-worker safety, GroupKFold, clinical ECG paper geometry, calibration pulses, waveform rendering, 3D perspective distortion, corner detection, homography rectification, shadow division normalization, MobileNetV3 tensors, boundary stress conditions, and multi-worker DataLoader concurrency.
+- **Unit & Stress Tests:** 116 passing tests (100% pass rate, 91.3% code coverage) covering dataset loading, memory-mapping, patient isolation, zero-phase filtering, fault detection, PyTorch zero-copy dataset slicing, multi-worker safety, GroupKFold, clinical ECG paper geometry, calibration pulses, waveform rendering, 3D perspective distortion, corner detection, homography rectification, shadow division normalization, MobileNetV3 tensors, boundary stress conditions, multi-worker DataLoader concurrency, EchoNext waveform-to-image conversion (determinism, resumability, parallel/serial equivalence), MobileNetV3 training, and SHD inference on user images.
 - **Continuous Integration:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) executes a 4-stage parallel quality gate: Ruff code style linting, Mypy static typing, Pytest coverage enforcement (minimum 85%), and clinical pipeline end-to-end integration artifact verification.

@@ -13,13 +13,15 @@ flowchart TD
     P3["Phase 3: Dataset Manifest & Reproducibility\n(Canonical Records, Zero-Leakage Splits, PyTorch Datasets)"]
     P4["Phase 4: Waveform-to-Image Paper Renderer\n(3x4 Layout + Rhythm Strip, 1mm/5mm Grid, Calibration)"]
     P5["Phase 5: Smartphone Simulation & Vision Preprocessor\n(Perspective Distortion, Homography, MobileNetV3 Prep)"]
-    Downstream["Downstream: MobileNetV3 Training & Edge Deployment\n(Outside current pipeline scope)"]
+    P6["Phase 6: Waveform-to-Image Dataset & MobileNetV3 SHD Classifier\n(Conversion, Training, User-Image Inference)"]
+    Downstream["Downstream: Edge Deployment & Real-Photo Clinical Validation"]
 
     P1 --> P2
     P2 --> P3
     P3 --> P4
     P4 --> P5
-    P5 --> Downstream
+    P5 --> P6
+    P6 --> Downstream
 ```
 
 | Phase | Focus Area | Primary Target Files | Status |
@@ -29,6 +31,7 @@ flowchart TD
 | **Phase 3** | Dataset Manifest & Split Reproducibility | `src/data/dataset.py`, `src/data/splits.py`, `scripts/build_dataset_manifest.py` | **Complete** |
 | **Phase 4** | Digital 12-Lead ECG Paper Image Renderer | `src/rendering/renderer.py`, `src/rendering/layout.py`, `scripts/generate_ecg_images.py` | **Complete** |
 | **Phase 5** | Smartphone Photo Simulation & Rectification | `src/preprocessing/image.py`, `src/preprocessing/perspective.py`, `src/preprocessing/transforms.py` | **Complete** |
+| **Phase 6** | Waveform-to-Image Dataset & MobileNetV3 SHD Classifier | `src/vision/conversion.py`, `src/vision/training.py`, `src/vision/inference.py` | **Complete** |
 
 ---
 

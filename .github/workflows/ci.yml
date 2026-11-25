@@ -128,6 +128,12 @@ jobs:
       - name: Run Phase 5 Smartphone Vision Simulation & Rectification
         run: uv run python scripts/validate_pipeline.py --report-dir reports/ --num-samples 5
 
+      - name: Run Phase 6 EchoNext-to-Image Conversion, MobileNetV3 Training & Inference Smoke Test
+        run: |
+          uv run python scripts/convert_echonext_to_images.py --output-dir data/images/shd --max-per-split 8 --num-workers 2
+          uv run python scripts/train_shd_classifier.py --image-dir data/images/shd --output-dir models/shd_ci --arch small --epochs 1 --batch-size 4 --num-workers 0 --image-size 320 224
+          uv run python scripts/predict_shd.py "$(ls data/images/shd/test/*.jpg | head -n 1)" --checkpoint models/shd_ci/best.pt
+
       - name: Verify Pipeline Artifacts Exist
         run: |
           test -f reports/phase1_exploration_report.md
@@ -145,6 +151,10 @@ jobs:
           test -f data/synthetic/image_manifest.csv
           test -f reports/phase5_vision_report.md
           test -f reports/figures/vision_pipeline_stages.png
+          test -f data/images/shd/image_manifest.csv
+          test -f data/images/shd/conversion_config.json
+          test -f models/shd_ci/best.pt
+          test -f models/shd_ci/training_summary.json
           echo "All Phase 1, Phase 2, Phase 3, Phase 4, and Phase 5 reports, figures, and data artifacts successfully verified!"
 
       - name: Upload Pipeline Artifacts
@@ -156,3 +166,5 @@ jobs:
             reports/
             data/processed/quality_summary.json
             data/synthetic/image_manifest.csv
+            data/images/shd/image_manifest.csv
+            models/shd_ci/training_summary.json
